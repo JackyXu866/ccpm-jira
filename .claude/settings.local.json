@@ -5,7 +5,6 @@
       "Bash(.claude/scripts/test-and-log.sh:*)",
       "Bash(bash .claude/scripts/pm/*)",
       "Bash(.claude/scripts/pm/*)",
-
       "Bash(cat *)",
       "Bash(cat:*)",
       "Bash(composer *)",
@@ -33,7 +32,11 @@
       "Bash(tree *)",
       "List(**)",
       "WebFetch(domain:github.com)",
-      "WebSearch"
+      "WebSearch",
+      "mcp__atlassian__atlassianUserInfo",
+      "mcp__atlassian__getAccessibleAtlassianResources",
+      "mcp__atlassian__getVisibleJiraProjects",
+      "mcp__atlassian__searchJiraIssuesUsingJql"
     ]
   }
 }
