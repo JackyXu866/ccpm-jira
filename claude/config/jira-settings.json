@@ -1,0 +1,52 @@
+{
+  "version": "1.0.0",
+  "description": "JIRA MCP Integration Configuration",
+  "cloudId": "86fbc6fd-27a2-481c-ac00-0505c1407b32",
+  "defaultProjectKey": "CCPM",
+  "authentication": {
+    "method": "mcp",
+    "lastValidated": null,
+    "validationExpiry": null
+  },
+  "userPreferences": {
+    "defaultIssueType": "Task",
+    "defaultAssignee": "me",
+    "maxResults": 50,
+    "dateFormat": "YYYY-MM-DD",
+    "timezone": "UTC"
+  },
+  "cache": {
+    "enabled": true,
+    "ttl": 300,
+    "maxEntries": 100,
+    "clearOnStartup": false
+  },
+  "operations": {
+    "timeouts": {
+      "default": 30,
+      "search": 60,
+      "bulk": 120
+    },
+    "retries": {
+      "maxAttempts": 3,
+      "baseDelay": 1,
+      "maxDelay": 30
+    }
+  },
+  "projects": {
+    "favorites": [],
+    "recent": [],
+    "maxRecent": 10
+  },
+  "logging": {
+    "level": "info",
+    "enabled": true,
+    "maxLogFiles": 5,
+    "maxLogSize": "10MB"
+  },
+  "advanced": {
+    "customFields": {},
+    "workflows": {},
+    "templates": {}
+  }
+}
