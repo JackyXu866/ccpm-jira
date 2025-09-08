@@ -135,6 +135,12 @@ Always run tests before committing:
 ## Code Style
 
 Follow existing patterns in the codebase.
+
+## Directory Navigation Rules
+
+- Always return to the root project directory after executing commands that change directories
+- Never use `../` in commands to navigate out of the project directory
+- Use absolute paths or ensure you're in the correct working directory before running commands
 EOF
   echo "  ✅ CLAUDE.md created"
 fi
