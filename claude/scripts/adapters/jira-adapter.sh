@@ -25,7 +25,7 @@ CONFIG_FILE="${SCRIPT_DIR}/../../config/jira-settings.json"
 # =============================================================================
 
 #' Create a new Jira issue
-#' Usage: create_jira_issue PROJECT_KEY ISSUE_TYPE SUMMARY [DESCRIPTION] [ASSIGNEE_ID]
+#' Usage: create_jira_issue [PROJECT_KEY] ISSUE_TYPE SUMMARY [DESCRIPTION] [ASSIGNEE_ID]
 #' Returns: Issue ID/Key on success
 create_jira_issue() {
     local project_key="${1:-}"
@@ -34,10 +34,25 @@ create_jira_issue() {
     local description="${4:-}"
     local assignee_id="${5:-}"
     
+    # If only 3 args provided, assume project key was omitted
+    if [[ $# -eq 3 ]] || [[ $# -eq 4 && "${4}" != *"@"* ]]; then
+        # Shift parameters - no project key provided
+        assignee_id="${4:-}"
+        description="${3:-}"
+        summary="${2:-}"
+        issue_type="${1:-}"
+        project_key=""
+    fi
+    
+    # Get default project key if not provided
+    if [[ -z "$project_key" ]]; then
+        project_key=$(get_default_project_key) || return 1
+    fi
+    
     # Validate required parameters
-    if [[ -z "$project_key" || -z "$issue_type" || -z "$summary" ]]; then
+    if [[ -z "$issue_type" || -z "$summary" ]]; then
         echo "Error: Missing required parameters for create_jira_issue" >&2
-        echo "Usage: create_jira_issue PROJECT_KEY ISSUE_TYPE SUMMARY [DESCRIPTION] [ASSIGNEE_ID]" >&2
+        echo "Usage: create_jira_issue [PROJECT_KEY] ISSUE_TYPE SUMMARY [DESCRIPTION] [ASSIGNEE_ID]" >&2
         return 1
     fi
     
@@ -154,7 +169,7 @@ search_jira_issues() {
 }
 
 #' Create a Jira epic
-#' Usage: create_jira_epic PROJECT_KEY EPIC_NAME SUMMARY [DESCRIPTION]
+#' Usage: create_jira_epic [PROJECT_KEY] EPIC_NAME SUMMARY [DESCRIPTION]
 #' Returns: Epic issue key on success
 create_jira_epic() {
     local project_key="${1:-}"
@@ -162,9 +177,23 @@ create_jira_epic() {
     local summary="${3:-}"
     local description="${4:-}"
     
-    if [[ -z "$project_key" || -z "$epic_name" || -z "$summary" ]]; then
+    # If only 3 args provided, assume project key was omitted
+    if [[ $# -eq 3 ]] || [[ $# -eq 2 ]]; then
+        # Shift parameters - no project key provided
+        description="${3:-}"
+        summary="${2:-}"
+        epic_name="${1:-}"
+        project_key=""
+    fi
+    
+    # Get default project key if not provided
+    if [[ -z "$project_key" ]]; then
+        project_key=$(get_default_project_key) || return 1
+    fi
+    
+    if [[ -z "$epic_name" || -z "$summary" ]]; then
         echo "Error: Missing required parameters for create_jira_epic" >&2
-        echo "Usage: create_jira_epic PROJECT_KEY EPIC_NAME SUMMARY [DESCRIPTION]" >&2
+        echo "Usage: create_jira_epic [PROJECT_KEY] EPIC_NAME SUMMARY [DESCRIPTION]" >&2
         return 1
     fi
     
@@ -310,6 +339,52 @@ get_cloud_id() {
     else
         echo "$DEFAULT_CLOUD_ID"
     fi
+}
+
+#' Get default project key with validation
+get_default_project_key() {
+    local project_key=""
+    
+    # Try to get from config
+    if [[ -f "$CONFIG_FILE" ]]; then
+        project_key=$(jq -r '.defaultProjectKey // empty' "$CONFIG_FILE" 2>/dev/null)
+    fi
+    
+    # If not found or empty, try to fetch available projects
+    if [[ -z "$project_key" ]] || [[ "$project_key" == "JIRA" ]]; then
+        local cloud_id
+        cloud_id=$(get_cloud_id)
+        
+        echo "No valid project key found. Fetching available projects..." >&2
+        
+        # Get visible projects
+        local projects_result
+        if projects_result=$(get_jira_projects "create"); then
+            # Extract first available project key
+            local first_key
+            first_key=$(echo "$projects_result" | jq -r '.values[0].key // empty' 2>/dev/null)
+            
+            if [[ -n "$first_key" ]]; then
+                project_key="$first_key"
+                echo "Using first available project: $project_key" >&2
+                
+                # Update config with discovered project
+                if [[ -f "$CONFIG_FILE" ]]; then
+                    local updated_config
+                    updated_config=$(jq --arg key "$project_key" '.defaultProjectKey = $key' "$CONFIG_FILE")
+                    echo "$updated_config" > "$CONFIG_FILE"
+                fi
+            else
+                echo "Error: No projects found. Please create a project in JIRA first." >&2
+                return 1
+            fi
+        else
+            echo "Error: Could not fetch projects. Please check your configuration." >&2
+            return 1
+        fi
+    fi
+    
+    echo "$project_key"
 }
 
 #' Validate Jira configuration

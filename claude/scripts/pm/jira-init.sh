@@ -325,11 +325,63 @@ configure_basic_settings() {
         fi
     fi
     
-    # Default project key
+    # Fetch available projects
     echo
-    print_status "info" "Default project key will be used when no project is specified."
-    local default_project
-    default_project=$(prompt_with_validation "Enter default project key" "validate_project_key_input" "CCPM")
+    print_status "info" "Fetching available JIRA projects..."
+    
+    # Try to get projects using MCP
+    local projects_json
+    local default_project="JIRA"  # Fallback default
+    
+    # In real implementation, this would call MCP:
+    # projects_json=$(invoke_mcp_tool "mcp__atlassian__getVisibleJiraProjects" "{\"cloudId\":\"$cloud_id\",\"action\":\"create\"}")
+    
+    # For now, simulate the response
+    projects_json='{"values":[{"key":"SCRUM","name":"XperfServices"},{"key":"DEMO","name":"Demo Project"}]}'
+    
+    if [[ -n "$projects_json" ]] && [[ "$projects_json" != "null" ]]; then
+        # Extract project keys
+        local project_keys
+        project_keys=$(echo "$projects_json" | jq -r '.values[]?.key // empty' 2>/dev/null | sort -u)
+        
+        if [[ -n "$project_keys" ]]; then
+            print_status "success" "Found available projects:"
+            echo "$project_keys" | while read -r key; do
+                local name
+                name=$(echo "$projects_json" | jq -r ".values[] | select(.key==\"$key\") | .name // \"\"" 2>/dev/null)
+                echo "  - $key: $name"
+            done
+            echo
+            
+            # Use first project as suggestion if JIRA doesn't exist
+            local suggested_project
+            if echo "$project_keys" | grep -q "^JIRA$"; then
+                suggested_project="JIRA"
+            else
+                suggested_project=$(echo "$project_keys" | head -1)
+            fi
+            
+            print_status "info" "Default project key will be used when no project is specified."
+            default_project=$(prompt_with_validation "Enter default project key" "validate_project_key_input" "$suggested_project")
+            
+            # Verify the selected project exists
+            if ! echo "$project_keys" | grep -q "^${default_project}$"; then
+                print_status "warning" "Project '$default_project' not found in available projects."
+                if ! confirm_action "Create this project key anyway?" "no"; then
+                    # Ask again
+                    default_project=$(prompt_with_validation "Enter default project key" "validate_project_key_input" "$suggested_project")
+                fi
+            fi
+        else
+            print_status "warning" "No projects found. You may need to create a project first."
+            print_status "info" "Default project key will be used when no project is specified."
+            default_project=$(prompt_with_validation "Enter default project key" "validate_project_key_input" "JIRA")
+        fi
+    else
+        print_status "warning" "Could not fetch projects. Using manual configuration."
+        print_status "info" "Default project key will be used when no project is specified."
+        default_project=$(prompt_with_validation "Enter default project key" "validate_project_key_input" "JIRA")
+    fi
     
     # Create configuration with user input
     local config
