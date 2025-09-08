@@ -2,7 +2,7 @@
   "version": "1.0.0",
   "description": "JIRA MCP Integration Configuration",
   "cloudId": "86fbc6fd-27a2-481c-ac00-0505c1407b32",
-  "defaultProjectKey": "CCPM",
+  "defaultProjectKey": "SCRUM",
   "authentication": {
     "method": "mcp",
     "lastValidated": null,
