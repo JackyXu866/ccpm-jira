@@ -133,34 +133,41 @@ else
   echo "  Initialize with: git init"
 fi
 
-# Jira Configuration (Optional)
+# Jira Configuration (Required)
 echo ""
-echo "🔧 Jira Configuration (Optional)"
+echo "🔧 Jira Configuration (Required)"
 echo "================================"
 echo ""
-echo "Would you like to configure Jira integration? (y/n)"
-read -r configure_jira
 
-if [[ "$configure_jira" == "y" || "$configure_jira" == "Y" ]]; then
-  # Check if Atlassian MCP is available
-  if command -v mcp &> /dev/null || [ -f "claude/scripts/lib/mcp-helpers.sh" ]; then
-    echo "  ✅ MCP integration available"
+# Check if Atlassian MCP is available
+if command -v mcp &> /dev/null || [ -f "claude/scripts/lib/mcp-helpers.sh" ]; then
+  echo "  ✅ MCP integration available"
+  
+  # Check if jira-init.sh exists
+  if [ -f "claude/scripts/pm/jira-init.sh" ]; then
+    echo ""
+    echo "  🚀 Configuring Jira integration..."
+    bash claude/scripts/pm/jira-init.sh
     
-    # Check if jira-init.sh exists
-    if [ -f "claude/scripts/pm/jira-init.sh" ]; then
+    # Verify configuration was successful
+    if [ ! -f "claude/config/jira-settings.json" ] || [ ! -s "claude/config/jira-settings.json" ]; then
       echo ""
-      echo "  🚀 Launching Jira configuration..."
-      bash claude/scripts/pm/jira-init.sh
-    else
-      echo "  ⚠️ Jira initialization script not found"
-      echo "  Please ensure claude/scripts/pm/jira-init.sh exists"
+      echo "  ❌ Jira configuration failed or was cancelled"
+      echo "  CCPM requires Jira to be configured for issue tracking"
+      echo "  Please run: bash claude/scripts/pm/jira-init.sh"
+      exit 1
     fi
   else
-    echo "  ⚠️ Atlassian MCP not configured"
-    echo "  Please install and configure Atlassian MCP first"
+    echo "  ❌ Jira initialization script not found"
+    echo "  Please ensure claude/scripts/pm/jira-init.sh exists"
+    exit 1
   fi
 else
-  echo "  ⏭️ Skipping Jira configuration"
+  echo "  ❌ Atlassian MCP not configured"
+  echo "  CCPM requires Atlassian MCP for Jira integration"
+  echo "  Please install and configure Atlassian MCP first"
+  echo "  See: https://github.com/modelcontextprotocol/servers"
+  exit 1
 fi
 
 # Create CLAUDE.md if it doesn't exist
@@ -205,10 +212,10 @@ gh --version | head -1 | sed 's/^/    /'
 echo "    Extensions: $(gh extension list | wc -l) installed"
 echo "    Auth: $(gh auth status 2>&1 | grep -o 'Logged in to [^ ]*' || echo 'Not authenticated')"
 
-# Show Jira status if configured
+# Show Jira status (should always be configured at this point)
+echo ""
+echo "  Jira:"
 if [ -f "claude/config/jira-settings.json" ] && [ -s "claude/config/jira-settings.json" ]; then
-  echo ""
-  echo "  Jira:"
   if command -v jq &> /dev/null; then
     project_key=$(jq -r '.project_key // "Not configured"' claude/config/jira-settings.json 2>/dev/null)
     echo "    Project: $project_key"
@@ -217,8 +224,7 @@ if [ -f "claude/config/jira-settings.json" ] && [ -s "claude/config/jira-setting
     echo "    Status: Configuration found"
   fi
 else
-  echo ""
-  echo "  Jira: Not configured (optional)"
+  echo "    Status: ❌ Not configured (required)"
 fi
 
 echo ""
@@ -226,9 +232,6 @@ echo "🎯 Next Steps:"
 echo "  1. Create your first PRD: /pm:prd-new <feature-name>"
 echo "  2. View help: /pm:help"
 echo "  3. Check status: /pm:status"
-if [ ! -f "claude/config/jira-settings.json" ]; then
-  echo "  4. Configure Jira (optional): /pm:jira-init"
-fi
 echo ""
 echo "📚 Documentation: README.md"
 
