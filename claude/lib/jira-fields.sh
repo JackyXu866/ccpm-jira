@@ -78,7 +78,11 @@ map_ccpm_epic_to_jira() {
         
         # Get field mapping info
         local mapping_info
-        mapping_info=$(echo "$epic_mappings" | jq -r ".$ccpm_field")
+        mapping_info=$(echo "$epic_mappings" | jq -r ".[\"$ccpm_field\"]")
+        
+        if [[ "$mapping_info" == "null" ]]; then
+            continue
+        fi
         
         local jira_target
         jira_target=$(echo "$mapping_info" | jq -r '.target // empty')
@@ -136,7 +140,11 @@ map_jira_epic_to_ccpm() {
         
         # Get field mapping info
         local mapping_info
-        mapping_info=$(echo "$reverse_mappings" | jq -r ".$jira_field")
+        mapping_info=$(echo "$reverse_mappings" | jq -r ".[\"$jira_field\"]")
+        
+        if [[ "$mapping_info" == "null" ]]; then
+            continue
+        fi
         
         local ccpm_target
         ccpm_target=$(echo "$mapping_info" | jq -r '.target // empty')
@@ -194,7 +202,11 @@ map_ccpm_task_to_jira() {
         
         # Get field mapping info
         local mapping_info
-        mapping_info=$(echo "$task_mappings" | jq -r ".$ccpm_field")
+        mapping_info=$(echo "$task_mappings" | jq -r ".[\"$ccpm_field\"]")
+        
+        if [[ "$mapping_info" == "null" ]]; then
+            continue
+        fi
         
         local jira_target
         jira_target=$(echo "$mapping_info" | jq -r '.target // empty')
@@ -252,7 +264,11 @@ map_jira_task_to_ccpm() {
         
         # Get field mapping info
         local mapping_info
-        mapping_info=$(echo "$reverse_mappings" | jq -r ".$jira_field")
+        mapping_info=$(echo "$reverse_mappings" | jq -r ".[\"$jira_field\"]")
+        
+        if [[ "$mapping_info" == "null" ]]; then
+            continue
+        fi
         
         local ccpm_target
         ccpm_target=$(echo "$mapping_info" | jq -r '.target // empty')
@@ -326,10 +342,10 @@ transform_field_value() {
             transform_array_jira_to_ccpm "$value"
             ;;
         "dependency_array")
-            transform_dependency_array_ccpm_to_jira "$value"
+            transform_array_ccpm_to_jira "$value"
             ;;
         "dependency_array_from_jira")
-            transform_dependency_array_jira_to_ccpm "$value"
+            transform_array_jira_to_ccpm "$value"
             ;;
         *)
             echo "Warning: Unknown transform type: $transform_type" >&2
