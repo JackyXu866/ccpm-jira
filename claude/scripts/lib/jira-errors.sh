@@ -10,6 +10,12 @@
 # Version: 1.0.0
 # =============================================================================
 
+# Prevent multiple sourcing
+if [ -n "${JIRA_ERRORS_SOURCED:-}" ]; then
+    return 0
+fi
+export JIRA_ERRORS_SOURCED=1
+
 # Enable strict error handling
 set -euo pipefail
 
