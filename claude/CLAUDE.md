@@ -69,3 +69,14 @@ Using the test-runner agent ensures:
 - Always return to the root project directory after executing commands that change directories
 - Never use `../` in commands to navigate out of the project directory
 - Use absolute paths or ensure you're in the correct working directory before running commands
+
+## Directory Structure Rules
+
+- **IMPORTANT**: Implementation files go in `claude/` directory, NOT `.claude/`
+- `.claude/` is reserved for workflow artifacts only (epics, tasks, PRDs)
+- Structure:
+  - `claude/scripts/` - Implementation scripts
+  - `claude/config/` - Configuration files
+  - `claude/lib/` - Shared libraries
+  - `.claude/epics/` - Epic and task tracking
+  - `.claude/prds/` - Product requirement documents

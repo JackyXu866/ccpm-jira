@@ -88,8 +88,8 @@ mkdir -p .claude/epics
 mkdir -p .claude/rules
 mkdir -p .claude/agents
 mkdir -p .claude/scripts/pm
-mkdir -p .claude/templates
-mkdir -p .claude/config
+mkdir -p claude/templates
+mkdir -p claude/config
 echo "  ✅ Directories created"
 
 # Copy scripts if in main repo
