@@ -42,6 +42,23 @@ else
   fi
 fi
 
+# Check jq for JSON processing (required for Jira)
+if command -v jq &> /dev/null; then
+  echo "  ✅ jq (JSON processor) installed"
+else
+  echo "  ❌ jq not found"
+  echo ""
+  echo "  Installing jq..."
+  if command -v brew &> /dev/null; then
+    brew install jq
+  elif command -v apt-get &> /dev/null; then
+    sudo apt-get update && sudo apt-get install jq
+  else
+    echo "  Please install jq manually: https://stedolan.github.io/jq/"
+    exit 1
+  fi
+fi
+
 # Check gh auth status
 echo ""
 echo "🔐 Checking GitHub authentication..."
@@ -71,6 +88,8 @@ mkdir -p .claude/epics
 mkdir -p .claude/rules
 mkdir -p .claude/agents
 mkdir -p .claude/scripts/pm
+mkdir -p .claude/templates
+mkdir -p .claude/config
 echo "  ✅ Directories created"
 
 # Copy scripts if in main repo
@@ -114,6 +133,36 @@ else
   echo "  Initialize with: git init"
 fi
 
+# Jira Configuration (Optional)
+echo ""
+echo "🔧 Jira Configuration (Optional)"
+echo "================================"
+echo ""
+echo "Would you like to configure Jira integration? (y/n)"
+read -r configure_jira
+
+if [[ "$configure_jira" == "y" || "$configure_jira" == "Y" ]]; then
+  # Check if Atlassian MCP is available
+  if command -v mcp &> /dev/null || [ -f "claude/scripts/lib/mcp-helpers.sh" ]; then
+    echo "  ✅ MCP integration available"
+    
+    # Check if jira-init.sh exists
+    if [ -f "claude/scripts/pm/jira-init.sh" ]; then
+      echo ""
+      echo "  🚀 Launching Jira configuration..."
+      bash claude/scripts/pm/jira-init.sh
+    else
+      echo "  ⚠️ Jira initialization script not found"
+      echo "  Please ensure claude/scripts/pm/jira-init.sh exists"
+    fi
+  else
+    echo "  ⚠️ Atlassian MCP not configured"
+    echo "  Please install and configure Atlassian MCP first"
+  fi
+else
+  echo "  ⏭️ Skipping Jira configuration"
+fi
+
 # Create CLAUDE.md if it doesn't exist
 if [ ! -f "CLAUDE.md" ]; then
   echo ""
@@ -151,14 +200,35 @@ echo "✅ Initialization Complete!"
 echo "=========================="
 echo ""
 echo "📊 System Status:"
-gh --version | head -1
-echo "  Extensions: $(gh extension list | wc -l) installed"
-echo "  Auth: $(gh auth status 2>&1 | grep -o 'Logged in to [^ ]*' || echo 'Not authenticated')"
+echo "  GitHub:"
+gh --version | head -1 | sed 's/^/    /'
+echo "    Extensions: $(gh extension list | wc -l) installed"
+echo "    Auth: $(gh auth status 2>&1 | grep -o 'Logged in to [^ ]*' || echo 'Not authenticated')"
+
+# Show Jira status if configured
+if [ -f "claude/config/jira-settings.json" ] && [ -s "claude/config/jira-settings.json" ]; then
+  echo ""
+  echo "  Jira:"
+  if command -v jq &> /dev/null; then
+    project_key=$(jq -r '.project_key // "Not configured"' claude/config/jira-settings.json 2>/dev/null)
+    echo "    Project: $project_key"
+    echo "    Status: Configured ✅"
+  else
+    echo "    Status: Configuration found"
+  fi
+else
+  echo ""
+  echo "  Jira: Not configured (optional)"
+fi
+
 echo ""
 echo "🎯 Next Steps:"
 echo "  1. Create your first PRD: /pm:prd-new <feature-name>"
 echo "  2. View help: /pm:help"
 echo "  3. Check status: /pm:status"
+if [ ! -f "claude/config/jira-settings.json" ]; then
+  echo "  4. Configure Jira (optional): /pm:jira-init"
+fi
 echo ""
 echo "📚 Documentation: README.md"
 
