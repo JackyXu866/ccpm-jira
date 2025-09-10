@@ -5,7 +5,7 @@
 
 set -e
 
-# Load git integration library
+# Load libraries
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../../lib/git-integration.sh"
 
@@ -25,6 +25,16 @@ if [[ ! "$ISSUE_NUMBER" =~ ^[0-9]+$ ]]; then
 fi
 
 echo "🚀 Starting work on issue #$ISSUE_NUMBER"
+
+# Check for Jira integration mode
+jira_mode=false
+if [ -f "claude/settings.local.json" ]; then
+  if grep -q '"jira"' claude/settings.local.json && grep -q '"enabled": *true' claude/settings.local.json; then
+    jira_mode=true
+  fi
+fi
+
+echo "🔄 Mode: $([ "$jira_mode" = true ] && echo "Jira" || echo "GitHub")"
 
 # Quick Check: Get issue details
 echo "📋 Checking GitHub issue..."
@@ -84,6 +94,51 @@ if [[ ! -f "$ANALYSIS_FILE" ]]; then
 fi
 
 echo "   Found: $ANALYSIS_FILE"
+
+# Delegate to Jira implementation if enabled
+if [ "$jira_mode" = true ]; then
+    echo "🔄 Delegating to Jira implementation..."
+    
+    # Load Jira issue start implementation
+    if [ -f "claude/lib/issue-start-jira.sh" ]; then
+        source "claude/lib/issue-start-jira.sh"
+        
+        # Validate Jira setup
+        if ! validate_jira_setup; then
+            echo "❌ Jira setup validation failed"
+            echo "   Falling back to GitHub mode..."
+            jira_mode=false
+        else
+            # Run Jira-specific issue start workflow
+            if start_jira_issue "$ISSUE_NUMBER" "$TASK_FILE" "$EPIC_NAME"; then
+                echo ""
+                echo "✅ Jira issue start completed successfully!"
+                echo ""
+                echo "Epic: $EPIC_NAME"
+                echo "Task file: $TASK_FILE"
+                echo "Analysis: $ANALYSIS_FILE"
+                echo ""
+                echo "Next steps:"
+                echo "  Monitor with: /pm:epic-status $EPIC_NAME"
+                echo "  Sync updates: /pm:issue-sync $ISSUE_NUMBER"
+                exit 0
+            else
+                echo "❌ Jira issue start failed"
+                echo "   Falling back to GitHub mode..."
+                jira_mode=false
+            fi
+        fi
+    else
+        echo "❌ Jira implementation not found: claude/lib/issue-start-jira.sh"
+        echo "   Falling back to GitHub mode..."
+        jira_mode=false
+    fi
+fi
+
+# Continue with GitHub-only workflow if Jira mode is disabled or failed
+if [ "$jira_mode" = false ]; then
+    echo "🔄 Continuing with GitHub-only workflow..."
+fi
 
 # Ensure Worktree Exists
 echo "🔧 Checking epic worktree..."
