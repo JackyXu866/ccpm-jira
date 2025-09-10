@@ -62,12 +62,15 @@ search_jira_epics() {
     query="$query AND assignee = '$assignee_filter'"
   fi
   
-  # Note: This is a placeholder for the actual MCP search call
-  # In a real implementation, this would use the MCP Atlassian search functionality
+  # TODO: Replace this with actual MCP Atlassian search call
+  # The real implementation should use:
+  # mcp__atlassian__search "$query"
+  # 
+  # For now, using simulated response to demonstrate functionality
   echo "Search query: $query" >&2
   
-  # Simulated response for now - replace with actual MCP call
-  # Example structure of what we expect from Jira search
+  # Simulated response - replace with actual MCP call
+  # Expected structure from real Jira search:
   cat << 'EOF'
 [
   {
