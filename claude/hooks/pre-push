@@ -1,0 +1,103 @@
+#!/bin/bash
+
+# Pre-push hook for Git-Jira integration
+# Validates branch names follow Jira convention before pushing
+
+# This hook is called with the following parameters:
+# $1 -- Name of the remote to which the push is being done
+# $2 -- URL to which the push is being done
+
+set -e
+
+# Load git integration library if available
+GIT_INTEGRATION_LIB=""
+if [[ -f "claude/lib/git-integration.sh" ]]; then
+    GIT_INTEGRATION_LIB="claude/lib/git-integration.sh"
+elif [[ -f "../../lib/git-integration.sh" ]]; then
+    # In case we're in .git/hooks
+    GIT_INTEGRATION_LIB="../../claude/lib/git-integration.sh"
+fi
+
+if [[ -n "$GIT_INTEGRATION_LIB" ]] && [[ -f "$GIT_INTEGRATION_LIB" ]]; then
+    source "$GIT_INTEGRATION_LIB"
+else
+    echo "⚠️  Git integration library not found, using basic validation"
+    
+    # Basic validation function if library is not available
+    is_valid_jira_branch() {
+        local branch_name="$1"
+        if [[ "$branch_name" =~ ^[A-Z]+-[0-9]+(-.*)?$ ]]; then
+            return 0
+        fi
+        return 1
+    }
+fi
+
+# Check if Jira integration is enabled
+JIRA_INTEGRATION_ENABLED=true
+if [[ -f "claude/config/git-integration.json" ]]; then
+    # Parse JSON to check if integration is enabled
+    if grep -q '"enabled":\s*false' claude/config/git-integration.json 2>/dev/null; then
+        JIRA_INTEGRATION_ENABLED=false
+    fi
+fi
+
+# Skip validation if disabled
+if [[ "$JIRA_INTEGRATION_ENABLED" != "true" ]]; then
+    echo "ℹ️  Jira integration disabled, skipping branch validation"
+    exit 0
+fi
+
+# Get current branch
+current_branch=$(git branch --show-current)
+
+# Skip validation for main/master branches
+if [[ "$current_branch" == "main" || "$current_branch" == "master" ]]; then
+    exit 0
+fi
+
+# Skip validation for special branches (releases, hotfixes, etc.)
+if [[ "$current_branch" =~ ^(release|hotfix|develop|feature)/ ]]; then
+    echo "ℹ️  Skipping Jira validation for special branch: $current_branch"
+    exit 0
+fi
+
+echo "🔍 Validating branch name: $current_branch"
+
+# Validate branch name
+if is_valid_jira_branch "$current_branch"; then
+    echo "✅ Branch name follows Jira convention"
+    
+    # If library is available, show additional info
+    if [[ -n "$GIT_INTEGRATION_LIB" ]] && [[ -f "$GIT_INTEGRATION_LIB" ]]; then
+        if jira_key=$(extract_jira_key_from_branch "$current_branch" 2>/dev/null); then
+            echo "   Jira key: $jira_key"
+            
+            if jira_url=$(get_jira_url_from_branch "$current_branch" 2>/dev/null); then
+                echo "   Jira link: $jira_url"
+            fi
+        fi
+    fi
+    
+    exit 0
+else
+    echo "❌ Branch name does not follow Jira naming convention"
+    echo ""
+    echo "Expected format: JIRA-123 or PROJ-456-description"
+    echo "Examples:"
+    echo "  ✅ PROJ-123"
+    echo "  ✅ ABC-456-fix-login-bug"
+    echo "  ✅ TASK-789-implement-feature"
+    echo ""
+    echo "Current branch: $current_branch"
+    echo ""
+    echo "To fix this:"
+    echo "1. Create a new branch with proper naming:"
+    echo "   git checkout -b JIRA-123-your-description"
+    echo "2. Or disable Jira integration in claude/config/git-integration.json"
+    echo "3. Or force push (not recommended):"
+    echo "   git push --no-verify"
+    echo ""
+    
+    exit 1
+fi

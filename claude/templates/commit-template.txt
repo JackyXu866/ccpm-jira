@@ -1,0 +1,46 @@
+# [JIRA-KEY] Brief summary of changes (50 chars max)
+#
+# Longer description explaining what and why (wrap at 72 chars)
+# - What specific changes were made
+# - Why these changes were necessary
+# - How it affects the system/users
+#
+# Jira Integration:
+# Issue: JIRA-KEY
+# Type: [Story|Bug|Task|Epic|Subtask]
+# Status: [To Do|In Progress|In Review|Done]
+#
+# Testing:
+# - [ ] Unit tests added/updated
+# - [ ] Integration tests pass
+# - [ ] Manual testing completed
+#
+# Additional Notes:
+# - Breaking changes: [Yes/No - describe if yes]
+# - Dependencies: [Any new dependencies or changes]
+# - Deployment notes: [Special deployment instructions]
+#
+# Co-authored-by: Name <email@example.com>
+#
+# Template Usage:
+# 1. Replace JIRA-KEY with actual issue key (e.g., PROJ-123)
+# 2. Write clear, concise summary in first line
+# 3. Add detailed description if needed
+# 4. Update Jira fields with actual values
+# 5. Check off completed testing items
+# 6. Add co-authors if applicable
+# 7. Remove this template section before committing
+#
+# Examples:
+# [PROJ-123] Add user authentication middleware
+# [PROJ-456] Fix memory leak in data processing
+# [PROJ-789] Update API documentation for v2 endpoints
+#
+# Smart Commit Keywords (optional):
+# #time [amount] - Log work time (e.g., #time 2h 30m)
+# #comment [text] - Add comment to issue
+# #resolve - Mark issue as resolved
+# #close - Close issue
+# #transition [status] - Transition to specific status
+#
+# Remove all lines starting with # before committing
