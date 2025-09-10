@@ -170,6 +170,114 @@ else
   exit 1
 fi
 
+# Git Integration Configuration
+echo ""
+echo "🔗 Git Integration Configuration"
+echo "================================"
+echo ""
+
+# Check if Git integration config exists
+if [ ! -f "claude/config/git-integration.json" ]; then
+  echo "  📄 Git integration configuration not found"
+  echo "  Creating default configuration..."
+  
+  # Create default git integration config if missing
+  cat > claude/config/git-integration.json << 'EOF'
+{
+  "version": "1.0.0",
+  "description": "Git-Jira Integration Configuration",
+  "enabled": true,
+  "integration": {
+    "branch": {
+      "enabled": true,
+      "naming_convention": {
+        "format": "JIRA-{issue_key}",
+        "separator": "-",
+        "prefix_style": "uppercase",
+        "include_description": false,
+        "max_description_length": 30,
+        "fallback_prefix": "feature"
+      },
+      "validation": {
+        "enforce_convention": false,
+        "allow_exceptions": ["main", "develop", "master", "hotfix/*", "release/*"],
+        "warn_on_violation": true,
+        "block_on_violation": false
+      }
+    },
+    "commit": {
+      "enabled": true,
+      "message_format": {
+        "include_issue_key": true,
+        "position": "prefix",
+        "format": "Issue #{issue_key}: {message}",
+        "enforce_format": false
+      }
+    },
+    "pull_request": {
+      "enabled": true,
+      "title_format": {
+        "include_issue_key": true,
+        "include_summary": true,
+        "format": "[{issue_key}] {summary}",
+        "max_length": 100
+      },
+      "description": {
+        "include_issue_link": true,
+        "include_summary": true,
+        "template": "## Summary\\n{summary}\\n\\n## Jira Issue\\n{issue_link}\\n\\n## Changes\\n- {changes}"
+      }
+    }
+  },
+  "backwards_compatibility": {
+    "enabled": true,
+    "allow_non_jira_branches": true,
+    "fallback_behavior": "standard_git",
+    "legacy_branch_patterns": ["feature/*", "bugfix/*", "hotfix/*"]
+  },
+  "preferences": {
+    "auto_fetch_issue_data": true,
+    "cache_issue_data": true,
+    "cache_ttl": 3600,
+    "prompt_for_confirmation": false,
+    "verbose_output": false
+  }
+}
+EOF
+  echo "  ✅ Default Git integration configuration created"
+else
+  echo "  ✅ Git integration configuration found"
+fi
+
+# Validate Git integration configuration
+if [ -f "claude/lib/git-config.sh" ]; then
+  echo "  🔍 Validating Git integration configuration..."
+  if bash claude/lib/git-config.sh -c "validate_git_integration_config" 2>/dev/null; then
+    echo "  ✅ Git integration configuration is valid"
+  else
+    echo "  ⚠️ Git integration configuration may have issues"
+  fi
+else
+  echo "  ⚠️ Git integration library not found (claude/lib/git-config.sh)"
+fi
+
+# Check if Git hooks directory exists and offer to set up hooks
+if git rev-parse --git-dir > /dev/null 2>&1; then
+  git_dir=$(git rev-parse --git-dir)
+  hooks_dir="$git_dir/hooks"
+  
+  if [ -d "$hooks_dir" ]; then
+    echo "  📂 Git hooks directory found: $hooks_dir"
+    echo "  ℹ️ Git hooks can be configured later with Git integration commands"
+  fi
+fi
+
+echo "  📋 Git Integration Features:"
+echo "    • Smart branch naming with Jira issue keys"
+echo "    • Automatic commit message formatting"
+echo "    • Enhanced PR titles and descriptions"
+echo "    • Backwards compatible with existing workflows"
+
 # Create CLAUDE.md if it doesn't exist
 if [ ! -f "CLAUDE.md" ]; then
   echo ""
@@ -225,6 +333,29 @@ if [ -f "claude/config/jira-settings.json" ] && [ -s "claude/config/jira-setting
   fi
 else
   echo "    Status: ❌ Not configured (required)"
+fi
+
+# Show Git integration status
+echo ""
+echo "  Git Integration:"
+if [ -f "claude/config/git-integration.json" ] && [ -s "claude/config/git-integration.json" ]; then
+  if command -v jq &> /dev/null; then
+    git_enabled=$(jq -r '.enabled // false' claude/config/git-integration.json 2>/dev/null)
+    branch_enabled=$(jq -r '.integration.branch.enabled // false' claude/config/git-integration.json 2>/dev/null)
+    commit_enabled=$(jq -r '.integration.commit.enabled // false' claude/config/git-integration.json 2>/dev/null)
+    pr_enabled=$(jq -r '.integration.pull_request.enabled // false' claude/config/git-integration.json 2>/dev/null)
+    
+    if [ "$git_enabled" = "true" ]; then
+      echo "    Status: Enabled ✅"
+      echo "    Features: Branch($branch_enabled) Commit($commit_enabled) PR($pr_enabled)"
+    else
+      echo "    Status: Configured but disabled"
+    fi
+  else
+    echo "    Status: Configuration found"
+  fi
+else
+  echo "    Status: ❌ Not configured"
 fi
 
 echo ""

@@ -1,0 +1,129 @@
+{
+  "version": "1.0.0",
+  "description": "Git-Jira Integration Configuration",
+  "enabled": true,
+  "integration": {
+    "branch": {
+      "enabled": true,
+      "naming_convention": {
+        "format": "JIRA-{issue_key}",
+        "separator": "-",
+        "prefix_style": "uppercase",
+        "include_description": false,
+        "max_description_length": 30,
+        "fallback_prefix": "feature"
+      },
+      "validation": {
+        "enforce_convention": true,
+        "allow_exceptions": ["main", "develop", "master", "hotfix/*", "release/*"],
+        "warn_on_violation": true,
+        "block_on_violation": false
+      }
+    },
+    "commit": {
+      "enabled": true,
+      "message_format": {
+        "include_issue_key": true,
+        "position": "prefix",
+        "format": "Issue #{issue_key}: {message}",
+        "enforce_format": false,
+        "smart_commit": {
+          "enabled": false,
+          "commands": ["#resolve", "#close", "#comment"]
+        }
+      },
+      "templates": {
+        "default": "Issue #{issue_key}: {type}: {description}",
+        "types": ["feat", "fix", "docs", "style", "refactor", "test", "chore"]
+      }
+    },
+    "pull_request": {
+      "enabled": true,
+      "title_format": {
+        "include_issue_key": true,
+        "include_summary": true,
+        "format": "[{issue_key}] {summary}",
+        "max_length": 100
+      },
+      "description": {
+        "include_issue_link": true,
+        "include_summary": true,
+        "include_acceptance_criteria": false,
+        "template": "## Summary\\n{summary}\\n\\n## Jira Issue\\n{issue_link}\\n\\n## Changes\\n- {changes}\\n\\n## Test Plan\\n- [ ] Tests added/updated\\n- [ ] Manual testing completed"
+      },
+      "auto_link": {
+        "enabled": true,
+        "create_remote_links": true,
+        "transition_on_merge": false,
+        "merge_status": "In Review"
+      }
+    }
+  },
+  "backwards_compatibility": {
+    "enabled": true,
+    "allow_non_jira_branches": true,
+    "fallback_behavior": "standard_git",
+    "legacy_branch_patterns": ["feature/*", "bugfix/*", "hotfix/*"],
+    "migration": {
+      "warn_on_legacy": true,
+      "suggest_rename": false,
+      "auto_migrate": false
+    }
+  },
+  "hooks": {
+    "pre_commit": {
+      "enabled": false,
+      "validate_message_format": true,
+      "check_jira_status": false
+    },
+    "pre_push": {
+      "enabled": false,
+      "validate_branch_name": true,
+      "check_remote_branch": false
+    },
+    "post_checkout": {
+      "enabled": false,
+      "sync_jira_status": false,
+      "notify_team": false
+    }
+  },
+  "preferences": {
+    "auto_fetch_issue_data": true,
+    "cache_issue_data": true,
+    "cache_ttl": 3600,
+    "prompt_for_confirmation": true,
+    "verbose_output": false,
+    "dry_run_mode": false
+  },
+  "error_handling": {
+    "on_jira_unavailable": "warn_and_continue",
+    "on_invalid_issue_key": "warn",
+    "on_permission_denied": "error",
+    "retry_attempts": 2,
+    "timeout_seconds": 30
+  },
+  "advanced": {
+    "custom_fields": {
+      "use_in_pr_description": [],
+      "use_in_commit_message": []
+    },
+    "workflows": {
+      "auto_transition": false,
+      "status_mapping": {
+        "branch_created": null,
+        "pr_opened": "In Review",
+        "pr_merged": "Done"
+      }
+    },
+    "integrations": {
+      "github_actions": {
+        "enabled": false,
+        "workflow_trigger": false
+      },
+      "ci_cd": {
+        "enabled": false,
+        "pipeline_variables": []
+      }
+    }
+  }
+}
