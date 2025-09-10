@@ -56,7 +56,21 @@ Read `.claude/epics/{epic_name}/$ARGUMENTS-analysis.md`:
 - Identify which can start immediately
 - Note dependencies between streams
 
-### 3. Setup Progress Tracking
+### 3. Create Jira Branch
+
+Create a Jira-formatted branch for the issue:
+```bash
+# Use the issue-start.sh script which includes Git integration
+./claude/scripts/pm/issue-start.sh $ARGUMENTS
+```
+
+The script will:
+- Extract Jira key from issue details or use configured prefix
+- Create branch with format: JIRA-123-description
+- Handle branch naming conflicts automatically
+- Switch to the new branch and push with upstream tracking
+
+### 4. Setup Progress Tracking
 
 Get current datetime: `date -u +"%Y-%m-%dT%H:%M:%SZ"`
 
@@ -67,7 +81,7 @@ mkdir -p .claude/epics/{epic_name}/updates/$ARGUMENTS
 
 Update task file frontmatter `updated` field with current datetime.
 
-### 4. Launch Parallel Agents
+### 5. Launch Parallel Agents
 
 For each stream that can start immediately:
 
@@ -123,20 +137,21 @@ Task:
     Complete your stream's work and mark as completed when done.
 ```
 
-### 5. GitHub Assignment
+### 6. GitHub Assignment
 
 ```bash
 # Assign to self and mark in-progress
 gh issue edit $ARGUMENTS --add-assignee @me --add-label "in-progress"
 ```
 
-### 6. Output
+### 7. Output
 
 ```
 ✅ Started parallel work on issue #$ARGUMENTS
 
 Epic: {epic_name}
 Worktree: ../epic-{epic_name}/
+Branch: {jira_branch_name} (Jira-formatted)
 
 Launching {count} parallel agents:
   Stream A: {name} (Agent-1) ✓ Started
