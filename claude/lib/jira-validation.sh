@@ -13,11 +13,11 @@ set -euo pipefail
 # =============================================================================
 
 # Source dependencies
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "${SCRIPT_DIR}/jira-fields.sh"
-source "${SCRIPT_DIR}/jira-epic-ops.sh"
-source "${SCRIPT_DIR}/jira-task-ops.sh"
-source "${SCRIPT_DIR}/../scripts/adapters/jira-adapter.sh"
+VALIDATION_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${VALIDATION_SCRIPT_DIR}/jira-fields.sh"
+source "${VALIDATION_SCRIPT_DIR}/jira-epic-ops.sh"
+source "${VALIDATION_SCRIPT_DIR}/jira-task-ops.sh"
+source "${VALIDATION_SCRIPT_DIR}/../scripts/adapters/jira-adapter.sh"
 
 # Ensure required tools are available
 if ! command -v jq >/dev/null 2>&1; then

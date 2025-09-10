@@ -33,10 +33,12 @@ CIRCUIT_BREAKER_FAILURE_THRESHOLD=5
 CIRCUIT_BREAKER_RESET_TIMEOUT=300  # 5 minutes
 CIRCUIT_BREAKER_STATE_FILE="${TMPDIR:-/tmp}/jira-circuit-breaker.state"
 
-# Circuit breaker states
-readonly CB_STATE_CLOSED="closed"
-readonly CB_STATE_OPEN="open"
-readonly CB_STATE_HALF_OPEN="half-open"
+# Circuit breaker states (only define if not already defined)
+if [[ -z "${CB_STATE_CLOSED:-}" ]]; then
+    readonly CB_STATE_CLOSED="closed"
+    readonly CB_STATE_OPEN="open"  
+    readonly CB_STATE_HALF_OPEN="half-open"
+fi
 
 # Retry statistics file
 RETRY_STATS_FILE="${TMPDIR:-/tmp}/jira-retry-stats.json"
