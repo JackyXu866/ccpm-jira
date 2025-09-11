@@ -6,7 +6,9 @@
 set -euo pipefail
 
 # Constants
-readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [[ -z "${SCRIPT_DIR:-}" ]]; then
+    readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+fi
 readonly CACHE_DIR="${HOME}/.cache/ccpm-jira"
 readonly AUTH_CACHE_FILE="${CACHE_DIR}/auth_state"
 readonly SEARCH_CACHE_DIR="${CACHE_DIR}/searches"

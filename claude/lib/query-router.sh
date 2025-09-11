@@ -6,10 +6,15 @@
 set -euo pipefail
 
 # Constants
-readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [[ -z "${SCRIPT_DIR:-}" ]]; then
+    readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+fi
+
+# Calculate library directory (handles being sourced from different locations)
+LIB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Source the search MCP library
-source "${SCRIPT_DIR}/search-mcp.sh"
+source "${LIB_DIR}/search-mcp.sh"
 
 # JQL trigger keywords and patterns
 declare -A JQL_KEYWORDS=(
