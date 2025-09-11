@@ -12,6 +12,8 @@ readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/../../lib/search-mcp.sh"
 source "${SCRIPT_DIR}/../../lib/query-router.sh"
 source "${SCRIPT_DIR}/../../lib/search-formatters.sh"
+source "${SCRIPT_DIR}/../../lib/saved-searches.sh"
+source "${SCRIPT_DIR}/../../lib/search-cache.sh"
 
 # Initialize cache directories
 init_cache_dirs
@@ -27,6 +29,8 @@ assignee_filter=""
 project_filter=""
 status_filter=""
 show_help=false
+use_cache=true
+saved_search=""
 
 # Function to show usage
 show_usage() {
@@ -44,6 +48,8 @@ show_usage() {
     echo "  --assignee USER      Filter by assignee (use 'me' for current user, 'unassigned' for unassigned)"
     echo "  --project PROJECT    Filter by project key"
     echo "  --status STATUS      Filter by status (default: open/in-progress statuses)"
+    echo "  --no-cache           Don't use cached results"
+    echo "  --saved NAME         Use a saved search as base (e.g., 'my-tasks')"
     echo "  -h, --help           Show this help"
     echo ""
     echo "Examples:"
@@ -184,10 +190,78 @@ find_jira_next_tasks() {
     local priority_filter="$3"
     local project_filter="$4"
     local status_filter="$5"
+    local use_cache="$6"
+    local saved_search="$7"
     
     echo "🎫 Jira Next Available Tasks" >&2
     echo "============================" >&2
     echo "" >&2
+    
+    # If using saved search, execute it instead
+    if [[ -n "$saved_search" ]]; then
+        echo "📚 Using saved search: $saved_search" >&2
+        local search_json
+        if search_json=$(get_saved_search "$saved_search"); then
+            local query
+            query=$(echo "$search_json" | jq -r '.query')
+            local search_type
+            search_type=$(echo "$search_json" | jq -r '.type // "auto"')
+            
+            # Expand environment variables
+            query=$(eval echo "\"$query\"")
+            
+            echo "🔍 Query: $query" >&2
+            echo "" >&2
+            
+            # Track performance
+            local start_time=$(date +%s%N)
+            
+            # Check cache first if enabled
+            if [[ "$use_cache" == "true" ]]; then
+                local cache_key
+                cache_key=$(generate_cache_key "$query" "$search_type" "$limit")
+                local cached_results
+                if cached_results=$(cache_get "$cache_key"); then
+                    echo "📋 Using cached results..." >&2
+                    local end_time=$(date +%s%N)
+                    local duration=$(( (end_time - start_time) / 1000000 ))
+                    track_performance "next-search" "$duration" "true"
+                    echo "$cached_results"
+                    return 0
+                fi
+            fi
+            
+            # Execute search
+            local results
+            if [[ "$search_type" == "jql" ]]; then
+                results=$(search_jql "$query" "$limit")
+            else
+                results=$(smart_search "$query" "$search_type" "$limit")
+            fi
+            
+            if [[ $? -eq 0 && -n "$results" ]]; then
+                # Cache results
+                if [[ "$use_cache" == "true" ]]; then
+                    local cache_key
+                    cache_key=$(generate_cache_key "$query" "$search_type" "$limit")
+                    cache_put "$cache_key" "$results" "$query" "$search_type"
+                fi
+                
+                # Track performance
+                local end_time=$(date +%s%N)
+                local duration=$(( (end_time - start_time) / 1000000 ))
+                track_performance "next-search" "$duration" "false"
+                
+                echo "$results"
+                return 0
+            else
+                return 1
+            fi
+        else
+            echo "❌ Saved search '$saved_search' not found" >&2
+            return 1
+        fi
+    fi
     
     # Build intelligent JQL query
     local jql
@@ -196,9 +270,39 @@ find_jira_next_tasks() {
     echo "🔍 Query: $jql" >&2
     echo "" >&2
     
+    # Track performance
+    local start_time=$(date +%s%N)
+    
+    # Check cache first if enabled
+    if [[ "$use_cache" == "true" ]]; then
+        local cache_key
+        cache_key=$(generate_cache_key "$jql" "jql" "$limit")
+        local cached_results
+        if cached_results=$(cache_get "$cache_key"); then
+            echo "📋 Using cached results..." >&2
+            local end_time=$(date +%s%N)
+            local duration=$(( (end_time - start_time) / 1000000 ))
+            track_performance "next-jql" "$duration" "true"
+            echo "$cached_results"
+            return 0
+        fi
+    fi
+    
     # Execute search
     local results
     if results=$(search_jql "$jql" "$limit"); then
+        # Cache results
+        if [[ "$use_cache" == "true" ]]; then
+            local cache_key
+            cache_key=$(generate_cache_key "$jql" "jql" "$limit")
+            cache_put "$cache_key" "$results" "$jql" "jql"
+        fi
+        
+        # Track performance
+        local end_time=$(date +%s%N)
+        local duration=$(( (end_time - start_time) / 1000000 ))
+        track_performance "next-jql" "$duration" "false"
+        
         # Add reasoning to each result
         local enhanced_results
         enhanced_results=$(echo "$results" | jq --arg reasoning "Available for assignment" '
@@ -416,6 +520,14 @@ main() {
                 status_filter="$2"
                 shift 2
                 ;;
+            --no-cache)
+                use_cache=false
+                shift
+                ;;
+            --saved)
+                saved_search="$2"
+                shift 2
+                ;;
             -h|--help)
                 show_help=true
                 shift
@@ -460,7 +572,7 @@ main() {
     fi
     
     if [[ "$include_jira" == "true" ]]; then
-        jira_tasks=$(find_jira_next_tasks "$limit" "$assignee_filter" "$priority_filter" "$project_filter" "$status_filter")
+        jira_tasks=$(find_jira_next_tasks "$limit" "$assignee_filter" "$priority_filter" "$project_filter" "$status_filter" "$use_cache" "$saved_search")
     fi
     
     # Merge and format results

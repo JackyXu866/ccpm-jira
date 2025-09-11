@@ -12,6 +12,7 @@ readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/../../lib/search-mcp.sh"
 source "${SCRIPT_DIR}/../../lib/query-router.sh"
 source "${SCRIPT_DIR}/../../lib/search-formatters.sh"
+source "${SCRIPT_DIR}/../../lib/saved-searches.sh"
 
 # Additional constants (after libraries are loaded)
 readonly SEARCH_HISTORY_FILE="${CACHE_DIR}/search_history"
@@ -30,6 +31,10 @@ show_help=false
 force_jql=false
 local_only=false
 jira_only=false
+saved_search=""
+list_saved=false
+save_as=""
+interactive=false
 
 # Function to show usage
 show_usage() {
@@ -48,6 +53,13 @@ show_usage() {
     echo "  --limit NUM          Maximum results to return (default: 25)"
     echo "  --offset NUM         Skip first NUM results for pagination (default: 0)"
     echo "  --no-cache           Don't use cached results"
+    echo ""
+    echo "Saved Search Options:"
+    echo "  --saved NAME         Execute a saved search by name"
+    echo "  --list-saved         List all saved searches"
+    echo "  --save-as NAME       Save current search with given name"
+    echo "  --interactive, -i    Interactive search mode"
+    echo ""
     echo "  -h, --help           Show this help"
     echo ""
     echo "Examples:"
@@ -56,6 +68,8 @@ show_usage() {
     echo "  pm:search --jira --jql 'assignee = currentUser()'  # JQL search"
     echo "  pm:search --format=list 'high priority'     # List format output"
     echo "  pm:search --limit=10 --offset=20 'tasks'    # Pagination"
+    echo "  pm:search --saved my-tasks                   # Execute saved search"
+    echo "  pm:search --save-as urgent 'priority = High' # Save search for reuse"
 }
 
 # Function to add query to search history
@@ -311,6 +325,22 @@ while [[ $# -gt 0 ]]; do
             use_cache="false"
             shift
             ;;
+        --saved)
+            saved_search="$2"
+            shift 2
+            ;;
+        --list-saved)
+            list_saved=true
+            shift
+            ;;
+        --save-as)
+            save_as="$2"
+            shift 2
+            ;;
+        --interactive|-i)
+            interactive=true
+            shift
+            ;;
         -h|--help)
             show_help=true
             shift
@@ -341,9 +371,30 @@ if [[ "$show_help" == "true" ]]; then
     exit 0
 fi
 
+# Handle list saved searches
+if [[ "$list_saved" == "true" ]]; then
+    echo "📚 Saved Searches"
+    echo "================="
+    echo ""
+    list_saved_searches "table"
+    exit 0
+fi
+
+# Handle interactive mode
+if [[ "$interactive" == "true" ]]; then
+    interactive_search
+    exit 0
+fi
+
+# Handle saved search execution
+if [[ -n "$saved_search" ]]; then
+    execute_saved_search "$saved_search" "$format" "$limit"
+    exit $?
+fi
+
 # Validate arguments
-if [[ -z "$query" ]]; then
-    echo "❌ Please provide a search query" >&2
+if [[ -z "$query" && -z "$saved_search" ]]; then
+    echo "❌ Please provide a search query or use --saved NAME" >&2
     echo "Use --help for usage information" >&2
     exit 1
 fi
@@ -367,3 +418,18 @@ esac
 
 # Perform the search
 perform_search "$query" "$search_mode" "$format" "$limit" "$offset" "$use_cache" "$force_jql"
+exit_code=$?
+
+# Save search if requested
+if [[ -n "$save_as" && $exit_code -eq 0 ]]; then
+    local search_type="auto"
+    if [[ "$force_jql" == "true" ]]; then
+        search_type="jql"
+    elif [[ "$search_mode" == "jira" ]]; then
+        search_type="auto"
+    fi
+    
+    save_search "$save_as" "$query" "$search_type" "Search saved via pm:search"
+fi
+
+exit $exit_code

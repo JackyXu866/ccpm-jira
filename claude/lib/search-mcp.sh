@@ -218,6 +218,14 @@ get_cached_results() {
     return 1
 }
 
+# Source advanced cache library if available
+if [[ -f "${SCRIPT_DIR}/search-cache.sh" ]]; then
+    source "${SCRIPT_DIR}/search-cache.sh"
+    ADVANCED_CACHE_AVAILABLE=true
+else
+    ADVANCED_CACHE_AVAILABLE=false
+fi
+
 # Main search function with caching and fallback
 search_with_fallback() {
     local query="$1"
@@ -227,13 +235,37 @@ search_with_fallback() {
     
     init_cache_dirs
     
+    # Track start time for performance metrics
+    local start_time=$(date +%s%N)
+    local cache_hit=false
+    
     # Try cache first
     if [[ "$use_cache" == "true" ]]; then
-        local cached_results
-        if cached_results=$(get_cached_results "$query" "$search_type"); then
-            echo "📋 Using cached results..." >&2
-            echo "$cached_results"
-            return 0
+        if [[ "$ADVANCED_CACHE_AVAILABLE" == "true" ]]; then
+            # Use advanced caching
+            local cache_key
+            cache_key=$(generate_cache_key "$query" "$search_type" "$max_results")
+            local cached_results
+            if cached_results=$(cache_get "$cache_key"); then
+                echo "📋 Using cached results..." >&2
+                cache_hit=true
+                
+                # Track performance
+                local end_time=$(date +%s%N)
+                local duration=$(( (end_time - start_time) / 1000000 ))
+                track_performance "search" "$duration" "true"
+                
+                echo "$cached_results"
+                return 0
+            fi
+        else
+            # Fall back to basic caching
+            local cached_results
+            if cached_results=$(get_cached_results "$query" "$search_type"); then
+                echo "📋 Using cached results..." >&2
+                echo "$cached_results"
+                return 0
+            fi
         fi
     fi
     
@@ -276,7 +308,23 @@ search_with_fallback() {
     normalized_results=$(normalize_results "$final_search_type" "$results")
     
     if [[ "$use_cache" == "true" ]]; then
-        cache_search_results "$query" "$final_search_type" "$normalized_results"
+        if [[ "$ADVANCED_CACHE_AVAILABLE" == "true" ]]; then
+            # Use advanced caching
+            local cache_key
+            cache_key=$(generate_cache_key "$query" "$search_type" "$max_results")
+            cache_put "$cache_key" "$normalized_results" "$query" "$final_search_type"
+            
+            # Track performance
+            local end_time=$(date +%s%N)
+            local duration=$(( (end_time - start_time) / 1000000 ))
+            track_performance "search" "$duration" "false"
+            
+            # Update total queries stat
+            update_stats "total_queries"
+        else
+            # Fall back to basic caching
+            cache_search_results "$query" "$final_search_type" "$normalized_results"
+        fi
     fi
     
     echo "$normalized_results"
