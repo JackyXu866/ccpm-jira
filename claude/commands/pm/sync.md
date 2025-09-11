@@ -1,10 +1,10 @@
 ---
-allowed-tools: Bash, Read, Write, LS
+allowed-tools: Bash, Read, Write, LS, Task
 ---
 
 # Sync
 
-Full bidirectional sync between local and GitHub.
+Full bidirectional sync between local files and Jira.
 
 ## Usage
 ```
@@ -15,68 +15,96 @@ If epic_name provided, sync only that epic. Otherwise sync all.
 
 ## Instructions
 
-### 1. Pull from GitHub
+### 1. Find All Synced Items
 
-Get current state of all issues:
+Search for all files with `jira:` field:
 ```bash
-# Get all epic and task issues
-gh issue list --label "epic" --limit 1000 --json number,title,state,body,labels,updatedAt
-gh issue list --label "task" --limit 1000 --json number,title,state,body,labels,updatedAt
+find .claude/epics -name "*.md" -exec grep -l "^jira:" {} \;
 ```
 
-### 2. Update Local from GitHub
+Group by epic and identify:
+- Epics with Jira keys
+- Tasks with Jira keys
+- Items without Jira keys (need creation)
 
-For each GitHub issue:
-- Find corresponding local file by issue number
-- Compare states:
-  - If GitHub state newer (updatedAt > local updated), update local
-  - If GitHub closed but local open, close local
-  - If GitHub reopened but local closed, reopen local
-- Update frontmatter to match GitHub state
+### 2. Pull from Jira
 
-### 3. Push Local to GitHub
+For each item with a Jira key:
+- Fetch current state from Jira
+- Compare with local state:
+  - Check `updated` timestamps
+  - Compare status, assignee, description
+- If Jira newer, update local:
+  - Status changes
+  - Assignee changes
+  - Progress updates
 
-For each local task/epic:
-- If has GitHub URL but GitHub issue not found, it was deleted - mark local as archived
-- If no GitHub URL, create new issue (like epic-sync)
-- If local updated > GitHub updatedAt, push changes:
-  ```bash
-  gh issue edit {number} --body-file {local_file}
-  ```
+### 3. Push to Jira
+
+For each local change (local newer than Jira):
+- Update Jira issue with local content
+- Sync status transitions if needed
+- Update description/acceptance criteria
+
+For items without Jira keys:
+- Create new issues in Jira
+- Add Jira key to local file
+- Set appropriate issue type and parent
 
 ### 4. Handle Conflicts
 
-If both changed (local and GitHub updated since last sync):
-- Show both versions
-- Ask user: "Local and GitHub both changed. Keep: (local/github/merge)?"
-- Apply user's choice
+If both changed since last sync:
+- Local changes to content → Local wins
+- Jira workflow state changes → Jira wins
+- Show conflict summary to user
 
 ### 5. Update Sync Timestamps
 
-Update all synced files with last_sync timestamp.
+For all synced items:
+```yaml
+last_sync: [current_timestamp]
+```
 
-### 6. Output
+### 6. Output Summary
 
 ```
 🔄 Sync Complete
 
-Pulled from GitHub:
-  Updated: {count} files
-  Closed: {count} issues
-  
-Pushed to GitHub:
-  Updated: {count} issues
-  Created: {count} new issues
-  
-Conflicts resolved: {count}
+📥 Pulled from Jira:
+   Updated: 3 issues
+   Status changes: 2
+   New assignments: 1
 
-Status:
-  ✅ All files synced
-  {or list any sync failures}
+📤 Pushed to Jira:
+   Updated: 5 issues
+   Created: 2 new issues
+   
+⚠️ Conflicts resolved:
+   Task #3: Used local content, kept Jira status
+   
+✅ All items synced successfully
+   Total synced: 12 items
+   Sync time: 2024-01-20T10:30:00Z
 ```
 
-## Important Notes
+## Sync Rules
 
-Follow `/rules/github-operations.md` for GitHub commands.
-Follow `/rules/frontmatter-operations.md` for local updates.
-Always backup before sync in case of issues.
+1. **Content**: Local files are source of truth
+2. **Status**: Jira workflow is source of truth
+3. **Progress**: Calculated from task completion
+4. **Assignee**: Jira is source of truth
+5. **New items**: Created in Jira during sync
+
+## Error Handling
+
+- Network issues: Retry failed items
+- Permission errors: Skip and report
+- Invalid transitions: Keep current state
+- Missing projects: Guide user to create
+
+## Performance
+
+For large syncs:
+- Batch API calls where possible
+- Show progress indicator
+- Allow partial sync on failure

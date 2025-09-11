@@ -4,12 +4,21 @@ allowed-tools: Bash, Read, Write, LS, Task
 
 # Epic Decompose
 
-Break epic into concrete, actionable tasks.
+Break epic into concrete, actionable tasks. When Jira integration is enabled, optionally creates corresponding Jira tasks with full metadata synchronization.
 
 ## Usage
 ```
-/pm:epic-decompose <feature_name>
+/pm:epic-decompose <feature_name> [--with-jira]
 ```
+
+## Arguments
+- `feature_name`: The epic name to decompose
+- `--with-jira`: Create Jira tasks immediately (requires Jira mode enabled)
+
+## Mode Detection
+The command automatically detects whether Jira integration is enabled:
+- **Jira Mode**: When `claude/settings.local.json` exists with `jira.enabled: true`
+- **GitHub Mode**: Default mode when Jira is not configured
 
 ## Required Rules
 
@@ -228,3 +237,142 @@ If any step fails:
 - Never leave the epic in an inconsistent state
 
 Aim for tasks that can be completed in 1-3 days each. Break down larger tasks into smaller, manageable pieces for the "$ARGUMENTS" epic.
+
+## Jira Integration Details
+
+When Jira mode is enabled and `--with-jira` flag is used:
+
+### 1. Task Creation Strategy
+- Creates local task files first (standard decomposition)
+- Then creates corresponding Jira issues
+- Maintains bidirectional linking
+
+### 2. Jira Task Metadata
+Each task creates a Jira issue with:
+- **Issue Type**: Configurable (Story, Task, Sub-task)
+- **Epic Link**: Automatically linked to parent epic
+- **Story Points**: Derived from effort estimate (XS=1, S=2, M=3, L=5, XL=8)
+- **Labels**: `github-task`, `epic-{name}`, parallel/sequential indicators
+- **Description**: Full task details including acceptance criteria
+- **Dependencies**: Stored in custom fields or comments
+
+### 3. Enhanced Frontmatter
+When Jira tasks are created, frontmatter includes:
+```yaml
+---
+name: Implement user authentication
+status: open
+created: 2024-01-15T10:30:00Z
+updated: 2024-01-15T10:30:00Z
+github: [Will be updated when synced]
+jira: PROJ-101
+jira_url: https://company.atlassian.net/browse/PROJ-101
+depends_on: [001]
+parallel: false
+conflicts_with: []
+story_points: 3
+---
+```
+
+### 4. Decomposition with Jira Example
+```bash
+/pm:epic-decompose memory-system --with-jira
+```
+
+Output:
+```
+📋 Decomposing epic: memory-system
+✅ Created 8 task files locally
+
+🎫 Creating Jira tasks...
+   Creating PROJ-101: Setup memory schema
+   Creating PROJ-102: Implement cache layer
+   Creating PROJ-103: Add persistence module
+   ... (5 more)
+
+✅ Decomposition complete!
+   Local tasks: 8 files created
+   Jira tasks: 8 issues created
+   Epic link: PROJ-100
+
+Mappings saved to: .claude/epics/memory-system/jira-mapping.json
+
+Next steps:
+   - Review tasks: /pm:epic-show memory-system
+   - Sync to GitHub: /pm:epic-sync memory-system
+   - Start work: /pm:issue-start 001
+```
+
+### 5. Jira-Specific Configuration
+Task creation respects Jira configuration:
+```json
+{
+  "jira": {
+    "task_defaults": {
+      "issue_type": "Story",
+      "priority": "Medium",
+      "components": ["Backend", "Frontend"],
+      "custom_fields": {
+        "effort_hours": "customfield_10050",
+        "acceptance_criteria": "customfield_10051"
+      }
+    }
+  }
+}
+```
+
+### 6. Dependency Management in Jira
+- **Blocks/Blocked By**: For sequential dependencies
+- **Relates To**: For tasks that should be aware of each other
+- **Clones**: For similar tasks across different modules
+
+### 7. Benefits of --with-jira Flag
+- Immediate visibility in Jira for planning
+- Team members can see work breakdown
+- Sprint planning can begin immediately
+- No need to wait for GitHub sync
+
+### 8. When to Skip Jira Creation
+Don't use `--with-jira` when:
+- Still iterating on task breakdown
+- Working on experimental features
+- Tasks might be significantly revised
+- Want to review locally first
+
+## Error Handling
+
+### Jira Creation Failures
+If Jira creation fails:
+- Local tasks remain intact
+- Shows which Jira tasks were created
+- Provides recovery command
+- Mapping file tracks partial progress
+
+### Common Issues
+1. **Epic Not Found in Jira**
+   - Ensure epic was synced with `/pm:epic-sync`
+   - Check epic mapping exists
+
+2. **Permission Denied**
+   - Verify Jira API token permissions
+   - Check project access rights
+
+3. **Custom Field Errors**
+   - Review Jira project configuration
+   - Update settings.local.json field mappings
+
+## Best Practices
+
+1. **Decompose First, Jira Second**
+   - Run without `--with-jira` initially
+   - Review and refine tasks
+   - Then run with flag when ready
+
+2. **Batch Operations**
+   - Create all tasks at once for consistency
+   - Avoid partial decomposition
+
+3. **Dependency Clarity**
+   - Clearly define task dependencies
+   - Consider Jira workflow limitations
+   - Document cross-team dependencies

@@ -3,7 +3,7 @@
 [![Automaze](https://img.shields.io/badge/By-automaze.io-4b3baf)](https://automaze.io)
 &nbsp;
 [![Claude Code](https://img.shields.io/badge/+-Claude%20Code-d97757)](https://github.com/automazeio/ccpm/blob/main/README.md)
-[![GitHub Issues](https://img.shields.io/badge/+-GitHub%20Issues-1f2328)](https://github.com/automazeio/ccpm)
+[![Jira Integration](https://img.shields.io/badge/+-Jira%20Integration-0052CC)](https://github.com/automazeio/ccpm)
 &nbsp;
 [![MIT License](https://img.shields.io/badge/License-MIT-28a745)](https://github.com/automazeio/ccpm/blob/main/LICENSE)
 &nbsp;
@@ -11,9 +11,9 @@
 &nbsp;
 [![Star this repo](https://img.shields.io/badge/★-Star%20this%20repo-e7b10b)](https://github.com/automazeio/ccpm)
 
-### Claude Code workflow to ship ~~faster~~ _better_ using spec-driven development, GitHub issues, Git worktrees, and mutiple AI agents running in parallel.
+### Claude Code workflow to ship ~~faster~~ _better_ using spec-driven development, Jira integration, Git worktrees, and mutiple AI agents running in parallel.
 
-Stop losing context. Stop blocking on tasks. Stop shipping bugs. This battle-tested system turns PRDs into epics, epics into GitHub issues, and issues into production code – with full traceability at every step.
+Stop losing context. Stop blocking on tasks. Stop shipping bugs. This battle-tested system turns PRDs into epics, epics into Jira issues, and issues into production code – with full traceability at every step.
 
 ![Claude Code PM](screenshot.webp)
 
@@ -22,7 +22,6 @@ Stop losing context. Stop blocking on tasks. Stop shipping bugs. This battle-tes
 - [Background](#background)
 - [The Workflow](#the-workflow)
 - [What Makes This Different?](#what-makes-this-different)
-- [Why GitHub Issues?](#why-github-issues)
 - [Core Principle: No Vibe Coding](#core-principle-no-vibe-coding)
 - [System Architecture](#system-architecture)
 - [Workflow Phases](#workflow-phases)
@@ -52,7 +51,7 @@ This system solves all of that.
 graph LR
     A[PRD Creation] --> B[Epic Planning]
     B --> C[Task Decomposition]
-    C --> D[GitHub Sync]
+    C --> D[Jira Sync]
     D --> E[Parallel Execution]
 ```
 
@@ -65,7 +64,7 @@ graph LR
 # Transform PRD into a technical epic with task breakdown
 /pm:prd-parse memory-system
 
-# Push to GitHub and start parallel execution
+# Push to Jira and start parallel execution
 /pm:epic-oneshot memory-system
 /pm:issue-start 1235
 ```
@@ -77,54 +76,26 @@ graph LR
 | Context lost between sessions | **Persistent context** across all work |
 | Serial task execution | **Parallel agents** on independent tasks |
 | "Vibe coding" from memory | **Spec-driven** with full traceability |
-| Progress hidden in branches | **Transparent audit trail** in GitHub |
+| Progress hidden in branches | **Transparent audit trail** in Jira |
 | Manual task coordination | **Intelligent prioritization** with `/pm:next` |
 
-## Why GitHub Issues?
-
-Most Claude Code workflows operate in isolation – a single developer working with AI in their local environment. This creates a fundamental problem: **AI-assisted development becomes a silo**.
-
-By using GitHub Issues as our database, we unlock something powerful:
-
-### 🤝 **True Team Collaboration**
-- Multiple Claude instances can work on the same project simultaneously
-- Human developers see AI progress in real-time through issue comments
-- Team members can jump in anywhere – the context is always visible
-- Managers get transparency without interrupting flow
-
-### 🔄 **Seamless Human-AI Handoffs**
-- AI can start a task, human can finish it (or vice versa)
-- Progress updates are visible to everyone, not trapped in chat logs
-- Code reviews happen naturally through PR comments
-- No "what did the AI do?" meetings
-
-### 📈 **Scalable Beyond Solo Work**
-- Add team members without onboarding friction
-- Multiple AI agents working in parallel on different issues
-- Distributed teams stay synchronized automatically
-- Works with existing GitHub workflows and tools
-
-### 🎯 **Single Source of Truth**
-- No separate databases or project management tools
-- Issue state is the project state
-
-## Jira Integration (Optional)
+## Jira Integration
 
 Take your workflow to the next level with seamless Jira integration that brings enterprise project management to AI-powered development:
 
 ### 🎯 **Why Add Jira?**
 
-While Claude Code PM works great with GitHub alone, adding Jira unlocks:
+Claude Code PM uses Jira for enterprise project management:
 - **Enterprise visibility** - Stakeholders see progress in familiar tools
 - **Cross-team coordination** - Link work across multiple projects
+- **True team collaboration** - Multiple Claude instances work simultaneously
 - **Advanced reporting** - Burndown charts, velocity tracking, custom dashboards
 - **Compliance & audit** - Meet enterprise governance requirements
 - **Existing workflows** - Integrate with your current processes
 
-### 🎫 **Unified Issue Tracking**
+### 🎫 **Native Jira Integration**
 - Work in your terminal, updates appear in Jira instantly
-- Every GitHub issue has a linked Jira ticket
-- Bidirectional sync keeps both systems aligned
+- Direct integration via MCP Atlassian
 - No manual updates or double entry
 - Comments, status changes, and progress sync automatically
 
@@ -159,17 +130,16 @@ export JIRA_SITE_URL="https://company.atlassian.net"
 # Initialize with Jira support
 /pm:init
 
-# That's it! Every command now works with both systems
-/pm:issue-start 123  # Updates GitHub + Jira status
-/pm:issue-sync 123   # Syncs progress to both
-/pm:issue-close 123  # Closes in both systems
+# That's it! Every command now works with Jira
+/pm:issue-start 123  # Updates Jira status
+/pm:issue-sync 123   # Syncs progress to Jira
+/pm:issue-close 123  # Closes in Jira
 ```
 
 ### 🔄 **Seamless Developer Experience**
 - **No context switching** - Stay in your terminal
 - **Automatic linking** - Issue numbers connect both systems
 - **Smart defaults** - Works out of the box with your Jira setup
-- **Graceful degradation** - If Jira is down, GitHub continues working
 
 ### 📈 **Proven Results**
 Teams using Jira integration report:
@@ -177,10 +147,6 @@ Teams using Jira integration report:
 - **Zero duplicate** data entry (automatic sync)
 - **100% traceability** from requirement to deployment
 - **3x faster** stakeholder communication
-
-> **Note:** Jira integration is completely optional. All commands work perfectly with GitHub alone. Add Jira when you need enterprise features or stakeholder visibility.
-- Comments are the audit trail
-- Labels provide organization
 
 This isn't just a project management system – it's a **collaboration protocol** that lets humans and AI agents work together at scale, using infrastructure your team already trusts.
 
@@ -248,14 +214,14 @@ Breaks epic into concrete, actionable tasks with acceptance criteria, effort est
 
 **Output:** `.claude/epics/feature-name/[task].md`
 
-### 4. GitHub Synchronization
+### 4. Jira Synchronization
 
 ```bash
 /pm:epic-sync feature-name
 # Or for confident workflows:
 /pm:epic-oneshot feature-name
 ```
-Pushes epic and tasks to GitHub as issues with appropriate labels and relationships.
+Pushes epic and tasks to Jira with appropriate relationships.
 
 ### 5. Execution Phase
 
@@ -278,7 +244,8 @@ Specialized agents implement tasks while maintaining progress updates and an aud
 > **❓ FAQ:** [docs/faq.md](docs/faq.md)
 
 ### Initial Setup
-- `/pm:init` - Install dependencies and configure GitHub/Jira
+- `/pm:init` - Install dependencies and configure system
+- `/pm:jira-init` - Configure Jira integration
 
 ### PRD Commands
 - `/pm:prd-new` - Launch brainstorming for new product requirement
@@ -288,9 +255,9 @@ Specialized agents implement tasks while maintaining progress updates and an aud
 - `/pm:prd-status` - Show PRD implementation status
 
 ### Epic Commands
-- `/pm:epic-decompose` - Break epic into task files **[Jira]**
-- `/pm:epic-sync` - Push epic and tasks to GitHub/Jira **[Jira]**
-- `/pm:epic-oneshot` - Decompose and sync in one command
+- `/pm:epic-decompose` - Break epic into task files
+- `/pm:epic-sync` - Push epic and tasks to Jira **[Jira]**
+- `/pm:epic-oneshot` - Decompose and sync in one command **[Jira]**
 - `/pm:epic-list` - List all epics **[Jira]**
 - `/pm:epic-show` - Display epic and its tasks
 - `/pm:epic-close` - Mark epic as complete
@@ -301,10 +268,14 @@ Specialized agents implement tasks while maintaining progress updates and an aud
 - `/pm:issue-show` - Display issue and sub-issues
 - `/pm:issue-status` - Check issue status
 - `/pm:issue-start` - Begin work with specialized agent **[Jira]**
-- `/pm:issue-sync` - Push updates to GitHub/Jira **[Jira]**
+- `/pm:issue-sync` - Push updates to Jira **[Jira]**
 - `/pm:issue-close` - Mark issue as complete **[Jira]**
 - `/pm:issue-reopen` - Reopen closed issue
 - `/pm:issue-edit` - Edit issue details
+
+### Sync Commands
+- `/pm:sync` - Full bidirectional sync with Jira **[Jira]**
+- `/pm:import` - Import existing Jira issues **[Jira]**
 
 ### Workflow Commands
 - `/pm:next` - Show next priority issue with epic context
@@ -314,15 +285,11 @@ Specialized agents implement tasks while maintaining progress updates and an aud
 - `/pm:in-progress` - List work in progress
 - `/pm:search` - Search across all content **[Jira]**
 
-### Sync Commands
-- `/pm:sync` - Full bidirectional sync with GitHub
-- `/pm:import` - Import existing GitHub issues
-
 ### Maintenance Commands
 - `/pm:validate` - Check system integrity
 - `/pm:clean` - Archive completed work
 
-> **[Jira]** = Enhanced with Jira integration when enabled
+> **[Jira]** = Requires Jira integration
 
 ## The Parallel Execution System
 
@@ -370,9 +337,9 @@ We're not assigning agents to issues. We're **leveraging multiple agents** to sh
 
 Your main conversation becomes the conductor, not the orchestra.
 
-### GitHub vs Local: Perfect Separation
+### Jira vs Local: Perfect Separation
 
-**What GitHub Sees:**
+**What Jira Sees:**
 - Clean, simple issues
 - Progress updates
 - Completion status
@@ -382,7 +349,7 @@ Your main conversation becomes the conductor, not the orchestra.
 - Agents coordinate through Git commits
 - Complex orchestration hidden from view
 
-GitHub doesn't need to know HOW the work got done – just that it IS done.
+Jira doesn't need to know HOW the work got done – just that it IS done.
 
 ### The Command Flow
 
@@ -409,8 +376,8 @@ Never lose project state again. Each epic maintains its own context, agents read
 ### ⚡ **Parallel Execution**
 Ship faster with multiple agents working simultaneously. Tasks marked `parallel: true` enable conflict-free concurrent development.
 
-### 🔗 **GitHub Native**
-Works with tools your team already uses. Issues are the source of truth, comments provide history, and there is no dependency on the Projects API.
+### 🔗 **Jira Native**
+Works with enterprise tools your team already uses. Issues are the source of truth, comments provide history.
 
 ### 🤖 **Agent Specialization**
 Right tool for every job. Different agents for UI, API, and database work. Each reads requirements and posts updates automatically.
@@ -442,15 +409,15 @@ Teams using this system report:
 
 # Review the epic...
 
-# Break into tasks and push to GitHub
+# Break into tasks and push to Jira
 /pm:epic-oneshot memory-system
-# Creates issues: #1234 (epic), #1235, #1236 (tasks)
+# Creates issues: PROJ-100 (epic), PROJ-101, PROJ-102 (tasks)
 
 # Start development on a task
 /pm:issue-start 1235
 # Agent begins work, maintains local progress
 
-# Sync progress to GitHub
+# Sync progress to Jira
 /pm:issue-sync 1235
 # Updates posted as issue comments
 
@@ -487,11 +454,9 @@ Teams using this system report:
    /pm:init
    ```
    This command will:
-   - Install GitHub CLI (if needed)
-   - Authenticate with GitHub
-   - Install [gh-sub-issue extension](https://github.com/yahsan2/gh-sub-issue) for proper parent-child relationships
    - Create required directories
    - Update .gitignore
+   - Prepare for Jira integration
 
 3. **Create `CLAUDE.md`** with your repository information
    ```bash
@@ -520,30 +485,28 @@ Watch as structured planning transforms into shipped code.
 |-----------|-------|--------|
 | PRD Creation | ✅ | — |
 | Implementation Planning | ✅ | — |
-| Task Breakdown | ✅ | ✅ (sync) |
+| Task Breakdown | ✅ | — |
 | Execution | ✅ | — |
 | Status Updates | ✅ | ✅ (sync) |
-| Final Deliverables | — | ✅ |
+| Code & Documentation | ✅ | — |
 
 ## Technical Notes
 
-### GitHub Integration
-- Uses **gh-sub-issue extension** for proper parent-child relationships
-- Falls back to task lists if extension not installed
+### Jira Integration
+- Uses **MCP Atlassian** for direct Jira API access
 - Epic issues track sub-task completion automatically
-- Labels provide additional organization (`epic:feature`, `task:feature`)
+- Supports custom fields and workflows
 
 ### File Naming Convention
 - Tasks start as `001.md`, `002.md` during decomposition
-- After GitHub sync, renamed to `{issue-id}.md` (e.g., `1234.md`)
+- Issue numbers map to local task files
 - Makes it easy to navigate: issue #1234 = file `1234.md`
 
 ### Design Decisions
-- Intentionally avoids GitHub Projects API complexity
 - All commands operate on local files first for speed
-- Synchronization with GitHub is explicit and controlled
+- Synchronization with Jira is explicit and controlled
 - Worktrees provide clean git isolation for parallel work
-- GitHub Projects can be added separately for visualization
+- Jira boards provide visualization
 
 ---
 

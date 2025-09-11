@@ -1,47 +1,46 @@
 ---
-allowed-tools: Bash, Read, Write, LS
+allowed-tools: Bash, Read, Write, LS, Task
 ---
 
 # Import
 
-Import existing GitHub issues into the PM system.
+Import existing Jira issues into the PM system.
 
 ## Usage
 ```
-/pm:import [--epic <epic_name>] [--label <label>]
+/pm:import [--project KEY] [--epic name] [--jql query]
 ```
 
 Options:
-- `--epic` - Import into specific epic
-- `--label` - Import only issues with specific label
-- No args - Import all untracked issues
+- `--project` - Import from specific Jira project
+- `--epic` - Import into specific local epic
+- `--jql` - Custom JQL query for import
 
 ## Instructions
 
-### 1. Fetch GitHub Issues
+### 1. Execute Jira Search
 
-```bash
-# Get issues based on filters
-if [[ "$ARGUMENTS" == *"--label"* ]]; then
-  gh issue list --label "{label}" --limit 1000 --json number,title,body,state,labels,createdAt,updatedAt
-else
-  gh issue list --limit 1000 --json number,title,body,state,labels,createdAt,updatedAt
-fi
+Use the provided JQL query to search Jira:
+```
+# Example queries:
+project = PROJ AND issuetype = Story AND sprint in openSprints()
+project = PROJ AND assignee = currentUser() AND status != Done
 ```
 
-### 2. Identify Untracked Issues
+### 2. Check for Existing Local Files
 
-For each GitHub issue:
-- Search local files for matching github URL
-- If not found, it's untracked and needs import
+For each Jira issue found:
+- Search local files for matching `jira:` field
+- If found, skip (already tracked)
+- If not found, mark for import
 
-### 3. Categorize Issues
+### 3. Organize by Epic
 
-Based on labels:
-- Issues with "epic" label → Create epic structure
-- Issues with "task" label → Create task in appropriate epic
-- Issues with "epic:{name}" label → Assign to that epic
-- No PM labels → Ask user or create in "imported" epic
+Based on issue type and parent:
+- **Epic type** → Create new epic structure
+- **Has Epic parent** → Import into that epic
+- **Specified --epic** → Import into specified epic
+- **No epic** → Create in "imported" epic
 
 ### 4. Create Local Structure
 
@@ -49,50 +48,94 @@ For each issue to import:
 
 **If Epic:**
 ```bash
-mkdir -p .claude/epics/{epic_name}
-# Create epic.md with GitHub content and frontmatter
+mkdir -p .claude/epics/{epic-name}
+# Create epic.md with Jira data
 ```
 
-**If Task:**
+**If Task/Story:**
 ```bash
-# Find next available number (001.md, 002.md, etc.)
-# Create task file with GitHub content
+# Find next available task number
+# Create task file with Jira data
 ```
 
-Set frontmatter:
+### 5. Create File Content
+
+Convert Jira fields to local format:
 ```yaml
-name: {issue_title}
-status: {open|closed based on GitHub}
-created: {GitHub createdAt}
-updated: {GitHub updatedAt}
-github: https://github.com/{org}/{repo}/issues/{number}
-imported: true
+---
+name: [Summary from Jira]
+status: [Map Jira status to local]
+jira: [Issue key]
+assignee: [Jira assignee]
+created: [From Jira]
+updated: [From Jira]
+imported: [Current timestamp]
+---
+
+# Task: [Summary]
+
+## Description
+[Description from Jira]
+
+## Acceptance Criteria
+[Converted from Jira]
 ```
 
-### 5. Output
+### 6. Status Mapping
+
+Map Jira statuses to local:
+- To Do, Open, Backlog → `open`
+- In Progress, In Review → `in-progress`
+- Done, Closed, Resolved → `closed`
+
+### 7. Output Summary
 
 ```
 📥 Import Complete
 
-Imported:
-  Epics: {count}
-  Tasks: {count}
+Imported from Jira:
+  Query: project = PROJ AND updated >= -7d
+  Found: 15 issues
   
-Created structure:
-  {epic_1}/
-    - {count} tasks
-  {epic_2}/
-    - {count} tasks
-    
-Skipped (already tracked): {count}
-
+Created locally:
+  ✅ 2 epics imported
+  ✅ 10 tasks imported
+  ⏭️ 3 already tracked (skipped)
+  
+Organization:
+  📁 feature-auth: 5 tasks
+  📁 feature-api: 4 tasks
+  📁 imported: 1 task
+  
 Next steps:
-  Run /pm:status to see imported work
-  Run /pm:sync to ensure full synchronization
+  • Review imported tasks
+  • Run /pm:sync to push any updates back
+  • Start work with /pm:issue-start
 ```
 
-## Important Notes
+## Import Strategies
 
-Preserve all GitHub metadata in frontmatter.
-Mark imported files with `imported: true` flag.
-Don't overwrite existing local files.
+### Full Project Import
+```
+/pm:import --project PROJ
+```
+Imports all recent issues from a project.
+
+### Targeted Import
+```
+/pm:import --jql "labels = needs-import"
+```
+Import specific labeled issues.
+
+### Into Existing Epic
+```
+/pm:import --epic feature-auth --jql "parent = PROJ-100"
+```
+Import child issues into local epic.
+
+## Error Handling
+
+- Invalid JQL: Show error and example queries
+- No results: Confirm query is correct
+- Duplicate detection: Skip already imported
+- Missing epic: Create "imported" epic automatically

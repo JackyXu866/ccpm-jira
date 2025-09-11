@@ -88,7 +88,6 @@ for dir in .claude/epics/*/; do
   n=$(grep "^name:" "$dir/epic.md" | head -1 | sed 's/^name: *//')
   s=$(grep "^status:" "$dir/epic.md" | head -1 | sed 's/^status: *//' | tr '[:upper:]' '[:lower:]')
   p=$(grep "^progress:" "$dir/epic.md" | head -1 | sed 's/^progress: *//')
-  g=$(grep "^github:" "$dir/epic.md" | head -1 | sed 's/^github: *//')
 
   # Defaults
   [ -z "$n" ] && n=$(basename "$dir")
@@ -97,13 +96,8 @@ for dir in .claude/epics/*/; do
   # Count tasks
   t=$(ls "$dir"[0-9]*.md 2>/dev/null | wc -l)
 
-  # Format output with GitHub issue number if available
-  if [ -n "$g" ]; then
-    i=$(echo "$g" | grep -o '/[0-9]*$' | tr -d '/')
-    entry="   📋 ${dir}epic.md (#$i) - $p complete ($t tasks)"
-  else
-    entry="   📋 ${dir}epic.md - $p complete ($t tasks)"
-  fi
+  # Format output
+  entry="   📋 ${dir}epic.md - $p complete ($t tasks)"
 
   # Apply status filter if specified
   if [ -n "$filter_status" ]; then

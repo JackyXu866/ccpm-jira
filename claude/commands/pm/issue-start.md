@@ -4,22 +4,20 @@ allowed-tools: Bash, Read, Write, LS, Task
 
 # Issue Start
 
-Begin work on a GitHub issue with parallel agents based on work stream analysis.
+Begin work on a Jira issue with parallel agents based on work stream analysis.
 
 ## Usage
 ```
-/pm:issue-start <issue_number>
+/pm:issue-start <issue_number> [--analyze]
 ```
+
+## Prerequisites
+- Jira must be configured in `claude/settings.local.json` with `jira.enabled: true`
+- MCP Atlassian connection must be active
 
 ## Quick Check
 
-1. **Get issue details:**
-   ```bash
-   gh issue view $ARGUMENTS --json state,title,labels,body
-   ```
-   If it fails: "❌ Cannot access issue #$ARGUMENTS. Check number or run: gh auth login"
-
-2. **Find local task file:**
+1. **Find local task file:**
    - First check if `.claude/epics/*/$ARGUMENTS.md` exists (new naming)
    - If not found, search for file containing `github:.*issues/$ARGUMENTS` in frontmatter (old naming)
    - If not found: "❌ No local task for issue #$ARGUMENTS. This issue may have been created outside the PM system."
@@ -56,19 +54,18 @@ Read `.claude/epics/{epic_name}/$ARGUMENTS-analysis.md`:
 - Identify which can start immediately
 - Note dependencies between streams
 
-### 3. Create Jira Branch
+### 3. Create Branch and Update Jira
 
-Create a Jira-formatted branch for the issue:
+- Validates Jira configuration (API key, user email, site URL)
+- Updates Jira issue status to "In Progress"
+- Creates Jira-formatted branch: `PROJ-123-description`
+- Handles branch naming conflicts automatically
+- Switches to new branch and pushes with upstream tracking
+
 ```bash
-# Use the issue-start.sh script which includes Git integration
+# The script handles both modes automatically
 ./claude/scripts/pm/issue-start.sh $ARGUMENTS
 ```
-
-The script will:
-- Extract Jira key from issue details or use configured prefix
-- Create branch with format: JIRA-123-description
-- Handle branch naming conflicts automatically
-- Switch to the new branch and push with upstream tracking
 
 ### 4. Setup Progress Tracking
 
@@ -137,14 +134,7 @@ Task:
     Complete your stream's work and mark as completed when done.
 ```
 
-### 6. GitHub Assignment
-
-```bash
-# Assign to self and mark in-progress
-gh issue edit $ARGUMENTS --add-assignee @me --add-label "in-progress"
-```
-
-### 7. Output
+### 6. Output
 
 ```
 ✅ Started parallel work on issue #$ARGUMENTS
@@ -176,3 +166,29 @@ If any step fails, report clearly:
 
 Follow `/rules/datetime.md` for timestamps.
 Keep it simple - trust that GitHub and file system work.
+
+## Jira Integration Details
+
+1. **Validates Setup**: Checks for required configuration
+   - Jira enabled in settings
+   - MCP connection active
+
+2. **Updates Status**: Transitions Jira issue to "In Progress"
+   - Uses available transitions for the issue
+   - Reports clear errors if transition fails
+
+## Example Output
+
+```
+🚀 Starting work on issue #123
+🔄 Mode: Jira
+📋 Checking task file...
+   Task: Implement user authentication
+🔄 Delegating to Jira implementation...
+🔍 Found Jira issue: PROJ-456
+📊 Updating Jira issue status to In Progress...
+✅ Jira status updated successfully
+🌱 Creating Jira-formatted branch...
+✅ Branch created: PROJ-456-implement-user-authentication
+✅ Jira issue start completed successfully!
+```

@@ -4,86 +4,84 @@ allowed-tools: Read, LS
 
 # Epic Oneshot
 
-Decompose epic into tasks and sync to GitHub in one operation.
+Decompose epic into tasks and sync to Jira in one operation.
 
 ## Usage
 ```
-/pm:epic-oneshot <feature_name>
+/pm:epic-oneshot <epic_name>
 ```
+
+## Prerequisites
+- Epic must exist and not have tasks yet
+- Epic must not be synced to Jira already
+- Jira must be configured
 
 ## Instructions
 
 ### 1. Validate Prerequisites
 
-Check that epic exists and hasn't been processed:
-```bash
-# Epic must exist
-test -f .claude/epics/$ARGUMENTS/epic.md || echo "❌ Epic not found. Run: /pm:prd-parse $ARGUMENTS"
-
-# Check for existing tasks
-if ls .claude/epics/$ARGUMENTS/[0-9]*.md 2>/dev/null | grep -q .; then
-  echo "⚠️ Tasks already exist. This will create duplicates."
-  echo "Delete existing tasks or use /pm:epic-sync instead."
-  exit 1
-fi
-
-# Check if already synced
-if grep -q "github:" .claude/epics/$ARGUMENTS/epic.md; then
-  echo "⚠️ Epic already synced to GitHub."
-  echo "Use /pm:epic-sync to update."
-  exit 1
-fi
-```
+The script already checked that:
+- Epic exists at `.claude/epics/$ARGUMENTS/epic.md`
+- No task files exist yet
+- Epic hasn't been synced to Jira
+- Jira is configured
 
 ### 2. Execute Decompose
 
-Simply run the decompose command:
+Run the decompose command:
 ```
-Running: /pm:epic-decompose $ARGUMENTS
+/pm:epic-decompose $ARGUMENTS
 ```
 
 This will:
 - Read the epic
-- Create task files (using parallel agents if appropriate)
+- Create task files
 - Update epic with task summary
 
 ### 3. Execute Sync
 
-Immediately follow with sync:
+After decompose completes successfully, run:
 ```
-Running: /pm:epic-sync $ARGUMENTS
+/pm:epic-sync $ARGUMENTS
 ```
 
 This will:
-- Create epic issue on GitHub
-- Create sub-issues (using parallel agents if appropriate)
-- Rename task files to issue IDs
-- Create worktree
+- Create Epic in Jira
+- Create all tasks as Stories/Tasks
+- Link tasks to Epic
+- Update local files with Jira keys
 
 ### 4. Output
 
+Show combined results from both operations:
 ```
-🚀 Epic Oneshot Complete: $ARGUMENTS
+✅ Epic oneshot complete!
 
-Step 1: Decomposition ✓
-  - Tasks created: {count}
-  
-Step 2: GitHub Sync ✓
-  - Epic: #{number}
-  - Sub-issues created: {count}
-  - Worktree: ../epic-$ARGUMENTS
+📋 Decomposition:
+   Created 5 tasks from epic
 
-Ready for development!
-  Start work: /pm:epic-start $ARGUMENTS
-  Or single task: /pm:issue-start {task_number}
+🔄 Jira sync:
+   Epic: PROJ-100
+   Tasks: PROJ-101 through PROJ-105
+
+Ready to start work:
+   /pm:epic-start $ARGUMENTS
 ```
 
-## Important Notes
+## Error Handling
 
-This is simply a convenience wrapper that runs:
-1. `/pm:epic-decompose` 
-2. `/pm:epic-sync`
+If decompose fails:
+- Show error and stop
+- Don't attempt sync
 
-Both commands handle their own error checking, parallel execution, and validation. This command just orchestrates them in sequence.
+If sync fails:
+- Tasks remain local only
+- Can retry with `/pm:epic-sync`
 
-Use this when you're confident the epic is ready and want to go from epic to GitHub issues in one step.
+## Why Use This?
+
+Combines two commands for new epics:
+1. `epic-decompose` - Creates tasks locally
+2. `epic-sync` - Pushes to Jira
+
+Saves time and ensures consistency when starting new features.

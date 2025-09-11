@@ -14,7 +14,7 @@ echo "┌───────────────────────�
 echo "│ Claude Code Project Management  │"
 echo "│ by https://x.com/aroussi        │"
 echo "└─────────────────────────────────┘"
-echo "https://github.com/automazeio/ccpm"
+echo "Claude Code PM with Jira Integration"
 echo ""
 echo ""
 
@@ -25,43 +25,8 @@ echo ""
 # Check for required tools
 echo "🔍 Checking dependencies..."
 
-# Check gh CLI
-if command -v gh &> /dev/null; then
-  echo "  ✅ GitHub CLI (gh) installed"
-else
-  echo "  ❌ GitHub CLI (gh) not found"
-  echo ""
-  echo "  Installing gh..."
-  if command -v brew &> /dev/null; then
-    brew install gh
-  elif command -v apt-get &> /dev/null; then
-    sudo apt-get update && sudo apt-get install gh
-  else
-    echo "  Please install GitHub CLI manually: https://cli.github.com/"
-    exit 1
-  fi
-fi
-
-# Check gh auth status
-echo ""
-echo "🔐 Checking GitHub authentication..."
-if gh auth status &> /dev/null; then
-  echo "  ✅ GitHub authenticated"
-else
-  echo "  ⚠️ GitHub not authenticated"
-  echo "  Running: gh auth login"
-  gh auth login
-fi
-
-# Check for gh-sub-issue extension
-echo ""
-echo "📦 Checking gh extensions..."
-if gh extension list | grep -q "yahsan2/gh-sub-issue"; then
-  echo "  ✅ gh-sub-issue extension installed"
-else
-  echo "  📥 Installing gh-sub-issue extension..."
-  gh extension install yahsan2/gh-sub-issue
-fi
+# Check for required directories
+echo "  ✅ Local file system ready"
 
 # Create directory structure
 echo ""
@@ -92,19 +57,6 @@ if git rev-parse --git-dir > /dev/null 2>&1; then
   if git remote -v | grep -q origin; then
     remote_url=$(git remote get-url origin)
     echo "  ✅ Remote configured: $remote_url"
-    
-    # Check if remote is the CCPM template repository
-    if [[ "$remote_url" == *"automazeio/ccpm"* ]] || [[ "$remote_url" == *"automazeio/ccpm.git"* ]]; then
-      echo ""
-      echo "  ⚠️ WARNING: Your remote origin points to the CCPM template repository!"
-      echo "  This means any issues you create will go to the template repo, not your project."
-      echo ""
-      echo "  To fix this:"
-      echo "  1. Fork the repository or create your own on GitHub"
-      echo "  2. Update your remote:"
-      echo "     git remote set-url origin https://github.com/YOUR_USERNAME/YOUR_REPO.git"
-      echo ""
-    fi
   else
     echo "  ⚠️ No remote configured"
     echo "  Add with: git remote add origin <url>"
@@ -145,14 +97,14 @@ echo "✅ Initialization Complete!"
 echo "=========================="
 echo ""
 echo "📊 System Status:"
-gh --version | head -1
-echo "  Extensions: $(gh extension list | wc -l) installed"
-echo "  Auth: $(gh auth status 2>&1 | grep -o 'Logged in to [^ ]*' || echo 'Not authenticated')"
+echo "  Local PM System: Ready"
+echo "  Jira Integration: Not configured (run /pm:jira-init)"
 echo ""
 echo "🎯 Next Steps:"
-echo "  1. Create your first PRD: /pm:prd-new <feature-name>"
-echo "  2. View help: /pm:help"
-echo "  3. Check status: /pm:status"
+echo "  1. Configure Jira: /pm:jira-init"
+echo "  2. Create your first PRD: /pm:prd-new <feature-name>"
+echo "  3. View help: /pm:help"
+echo "  4. Check status: /pm:status"
 echo ""
 echo "📚 Documentation: README.md"
 

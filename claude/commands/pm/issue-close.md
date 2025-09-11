@@ -4,19 +4,30 @@ allowed-tools: Bash, Read, Write, LS
 
 # Issue Close
 
-Mark an issue as complete and close it on GitHub.
+Mark an issue as complete and close it in Jira with proper resolution tracking.
 
 ## Usage
 ```
-/pm:issue-close <issue_number> [completion_notes]
+/pm:issue-close <issue_number> [resolution] [--create-pr]
 ```
+
+## Arguments
+- `issue_number`: The local issue number to close
+- `resolution`: Resolution type (default: "Fixed")
+  - Fixed - Issue was resolved
+  - Won't Fix - Issue will not be addressed
+  - Duplicate - Issue is a duplicate
+  - Cannot Reproduce - Issue could not be reproduced
+
+## Prerequisites
+- Jira must be configured in `claude/settings.local.json` with `jira.enabled: true`
+- MCP Atlassian connection must be active
 
 ## Instructions
 
 ### 1. Find Local Task File
 
-First check if `.claude/epics/*/$ARGUMENTS.md` exists (new naming).
-If not found, search for task file with `github:.*issues/$ARGUMENTS` in frontmatter (old naming).
+Check if `.claude/epics/*/$ARGUMENTS.md` exists.
 If not found: "❌ No local task for issue #$ARGUMENTS"
 
 ### 2. Update Local Status
@@ -36,60 +47,26 @@ If progress file exists at `.claude/epics/{epic}/updates/$ARGUMENTS/progress.md`
 - Add completion note with timestamp
 - Update last_sync with current datetime
 
-### 4. Close on GitHub
+### 4. Close in Jira
 
-Add completion comment and close:
-```bash
-# Add final comment
-echo "✅ Task completed
+Use Jira MCP tools to:
+- Transition issue to Done/Closed status
+- Set resolution field based on provided resolution type
+- Add completion comment with timestamp
 
-$ARGUMENTS
-
----
-Closed at: {timestamp}" | gh issue comment $ARGUMENTS --body-file -
-
-# Close the issue
-gh issue close $ARGUMENTS
-```
-
-### 5. Update Epic Task List on GitHub
-
-Check the task checkbox in the epic issue:
-
-```bash
-# Get epic name from local task file path
-epic_name={extract_from_path}
-
-# Get epic issue number from epic.md
-epic_issue=$(grep 'github:' .claude/epics/$epic_name/epic.md | grep -oE '[0-9]+$')
-
-if [ ! -z "$epic_issue" ]; then
-  # Get current epic body
-  gh issue view $epic_issue --json body -q .body > /tmp/epic-body.md
-  
-  # Check off this task
-  sed -i "s/- \[ \] #$ARGUMENTS/- [x] #$ARGUMENTS/" /tmp/epic-body.md
-  
-  # Update epic issue
-  gh issue edit $epic_issue --body-file /tmp/epic-body.md
-  
-  echo "✓ Updated epic progress on GitHub"
-fi
-```
-
-### 6. Update Epic Progress
+### 5. Update Epic Progress
 
 - Count total tasks in epic
 - Count closed tasks
 - Calculate new progress percentage
 - Update epic.md frontmatter progress field
 
-### 7. Output
+### 6. Output
 
 ```
 ✅ Closed issue #$ARGUMENTS
   Local: Task marked complete
-  GitHub: Issue closed & epic updated
+  Jira: Issue transitioned to Done
   Epic progress: {new_progress}% ({closed}/{total} tasks complete)
   
 Next: Run /pm:next for next priority task
@@ -98,5 +75,35 @@ Next: Run /pm:next for next priority task
 ## Important Notes
 
 Follow `/rules/frontmatter-operations.md` for updates.
-Follow `/rules/github-operations.md` for GitHub commands.
-Always sync local state before GitHub.
+Always sync local state before Jira.
+
+## Jira Integration Details
+
+1. **Validates Setup**: Checks for required configuration
+   - Jira enabled in settings
+   - MCP connection active
+
+2. **Maps Resolution**: Converts resolution to Jira format
+   - Fixed → Done
+   - Won't Fix → Won't Do
+   - Duplicate → Duplicate
+   - Cannot Reproduce → Cannot Reproduce
+
+3. **Updates Jira Status**: Transitions issue to Done/Closed
+   - Finds available transitions
+   - Sets resolution field
+   - Adds completion comment
+
+## Example Output
+
+```
+🎯 Closing issue #123 with resolution: Fixed
+🔄 Mode: Jira
+📋 Checking local task file...
+   Task: Implement user authentication
+🔄 Delegating to Jira implementation...
+🔍 Found Jira issue: PROJ-456
+📊 Transitioning Jira issue to Done...
+✅ Jira issue closed with resolution: Done
+✅ Issue #123 closed successfully
+```
