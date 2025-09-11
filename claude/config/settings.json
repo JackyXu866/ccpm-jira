@@ -1,0 +1,24 @@
+{
+  "version": "2.0.0",
+  "github": {
+    "owner": "",
+    "repo": "",
+    "default_branch": "main"
+  },
+  "jira": {
+    "enabled": false,
+    "cloud_id": "",
+    "project_key": "",
+    "project_id": "",
+    "api_version": "3",
+    "field_mapping": {
+      "epic_link": "customfield_10001",
+      "story_points": "customfield_10002"
+    }
+  },
+  "preferences": {
+    "auto_sync": true,
+    "verbose_output": false,
+    "default_issue_type": "Task"
+  }
+}
