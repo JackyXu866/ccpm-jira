@@ -1,0 +1,285 @@
+{
+  "version": "1.0.0",
+  "description": "Field mapping configuration between CCPM and Jira data models",
+  "updated": "2025-09-09T21:35:00Z",
+  
+  "epic_mappings": {
+    "ccpm_to_jira": {
+      "name": {
+        "target": "Epic Name",
+        "field_type": "custom",
+        "required": true,
+        "transform": "preserve"
+      },
+      "status": {
+        "target": "Status",
+        "field_type": "system",
+        "required": true,
+        "transform": "status_mapping"
+      },
+      "created": {
+        "target": "Created",
+        "field_type": "system",
+        "required": false,
+        "transform": "datetime"
+      },
+      "updated": {
+        "target": "Updated",
+        "field_type": "system",
+        "required": false,
+        "transform": "datetime"
+      },
+      "progress": {
+        "target": "Progress",
+        "field_type": "custom",
+        "required": false,
+        "transform": "percentage"
+      },
+      "prd": {
+        "target": "PRD Link",
+        "field_type": "custom",
+        "required": false,
+        "transform": "url"
+      },
+      "github": {
+        "target": "GitHub Issue",
+        "field_type": "custom",
+        "required": false,
+        "transform": "url"
+      },
+      "description": {
+        "target": "Description",
+        "field_type": "system",
+        "required": false,
+        "transform": "preserve"
+      }
+    },
+    "jira_to_ccpm": {
+      "Epic Name": {
+        "target": "name",
+        "transform": "preserve"
+      },
+      "Status": {
+        "target": "status",
+        "transform": "reverse_status_mapping"
+      },
+      "Created": {
+        "target": "created",
+        "transform": "datetime_from_jira"
+      },
+      "Updated": {
+        "target": "updated",
+        "transform": "datetime_from_jira"
+      },
+      "Progress": {
+        "target": "progress",
+        "transform": "percentage_from_jira"
+      },
+      "PRD Link": {
+        "target": "prd",
+        "transform": "preserve"
+      },
+      "GitHub Issue": {
+        "target": "github",
+        "transform": "preserve"
+      },
+      "Description": {
+        "target": "description",
+        "transform": "preserve"
+      }
+    }
+  },
+  
+  "task_mappings": {
+    "ccpm_to_jira": {
+      "name": {
+        "target": "Summary",
+        "field_type": "system",
+        "required": true,
+        "transform": "preserve"
+      },
+      "status": {
+        "target": "Status",
+        "field_type": "system",
+        "required": true,
+        "transform": "status_mapping"
+      },
+      "created": {
+        "target": "Created",
+        "field_type": "system",
+        "required": false,
+        "transform": "datetime"
+      },
+      "updated": {
+        "target": "Updated",
+        "field_type": "system",
+        "required": false,
+        "transform": "datetime"
+      },
+      "github": {
+        "target": "GitHub Issue",
+        "field_type": "custom",
+        "required": false,
+        "transform": "url"
+      },
+      "depends_on": {
+        "target": "Blocks",
+        "field_type": "system",
+        "required": false,
+        "transform": "dependency_array"
+      },
+      "parallel": {
+        "target": "Parallel Execution",
+        "field_type": "custom",
+        "required": false,
+        "transform": "boolean"
+      },
+      "conflicts_with": {
+        "target": "Conflicts With",
+        "field_type": "custom",
+        "required": false,
+        "transform": "array"
+      },
+      "description": {
+        "target": "Description",
+        "field_type": "system",
+        "required": false,
+        "transform": "preserve"
+      }
+    },
+    "jira_to_ccpm": {
+      "Summary": {
+        "target": "name",
+        "transform": "preserve"
+      },
+      "Status": {
+        "target": "status",
+        "transform": "reverse_status_mapping"
+      },
+      "Created": {
+        "target": "created",
+        "transform": "datetime_from_jira"
+      },
+      "Updated": {
+        "target": "updated",
+        "transform": "datetime_from_jira"
+      },
+      "GitHub Issue": {
+        "target": "github",
+        "transform": "preserve"
+      },
+      "Blocks": {
+        "target": "depends_on",
+        "transform": "dependency_array_from_jira"
+      },
+      "Parallel Execution": {
+        "target": "parallel",
+        "transform": "boolean_from_jira"
+      },
+      "Conflicts With": {
+        "target": "conflicts_with",
+        "transform": "array_from_jira"
+      },
+      "Description": {
+        "target": "description",
+        "transform": "preserve"
+      }
+    }
+  },
+  
+  "status_mappings": {
+    "ccpm_to_jira": {
+      "open": "To Do",
+      "in-progress": "In Progress",
+      "blocked": "Blocked",
+      "completed": "Done",
+      "closed": "Done",
+      "planning": "To Do"
+    },
+    "jira_to_ccpm": {
+      "To Do": "open",
+      "In Progress": "in-progress",
+      "Blocked": "blocked",
+      "Done": "completed",
+      "Closed": "closed"
+    }
+  },
+  
+  "issue_type_mappings": {
+    "ccpm_to_jira": {
+      "epic": "Epic",
+      "task": "Task",
+      "story": "Story",
+      "bug": "Bug",
+      "improvement": "Improvement"
+    },
+    "jira_to_ccpm": {
+      "Epic": "epic",
+      "Task": "task",
+      "Story": "task",
+      "Bug": "task",
+      "Improvement": "task"
+    }
+  },
+  
+  "custom_field_definitions": {
+    "epic_fields": {
+      "Progress": {
+        "jira_key": "customfield_10010",
+        "type": "number",
+        "description": "Epic progress percentage (0-100)"
+      },
+      "PRD Link": {
+        "jira_key": "customfield_10011", 
+        "type": "url",
+        "description": "Link to Product Requirements Document"
+      },
+      "GitHub Issue": {
+        "jira_key": "customfield_10012",
+        "type": "url",
+        "description": "Link to GitHub issue"
+      }
+    },
+    "task_fields": {
+      "GitHub Issue": {
+        "jira_key": "customfield_10012",
+        "type": "url",
+        "description": "Link to GitHub issue"
+      },
+      "Parallel Execution": {
+        "jira_key": "customfield_10013",
+        "type": "boolean", 
+        "description": "Whether task can be executed in parallel"
+      },
+      "Conflicts With": {
+        "jira_key": "customfield_10014",
+        "type": "array",
+        "description": "List of conflicting task IDs"
+      }
+    }
+  },
+  
+  "field_validation": {
+    "required_epic_fields": ["name", "status"],
+    "required_task_fields": ["name", "status"],
+    "date_format": "ISO8601",
+    "url_validation": true,
+    "status_validation": true
+  },
+  
+  "transformation_rules": {
+    "datetime": {
+      "input_format": "ISO8601",
+      "output_format": "JIRA_DATETIME"
+    },
+    "percentage": {
+      "min_value": 0,
+      "max_value": 100,
+      "decimal_places": 0
+    },
+    "dependency_array": {
+      "format": "task_id_array",
+      "validation": "task_exists"
+    }
+  }
+}
