@@ -24,14 +24,18 @@ fi
 get_jira_key() {
     local issue_number="$1"
     
-    # Try to extract from GitHub issue via gh CLI
-    if command -v gh >/dev/null 2>&1; then
-        local issue_body
-        issue_body=$(gh issue view "$issue_number" --json body --jq .body 2>/dev/null || echo "")
-        
-        # Look for JIRA key pattern in issue body
+    # Check local task files for Jira key
+    local task_file=""
+    for epic_dir in .claude/epics/*; do
+        if [[ -d "$epic_dir" ]] && [[ -f "$epic_dir/$issue_number.md" ]]; then
+            task_file="$epic_dir/$issue_number.md"
+            break
+        fi
+    done
+    
+    if [[ -n "$task_file" ]]; then
         local jira_key
-        jira_key=$(echo "$issue_body" | grep -oE '[A-Z]+-[0-9]+' | head -n1 || echo "")
+        jira_key=$(grep '^jira_key:' "$task_file" | head -1 | sed 's/^jira_key: *//' | sed 's/"//g' || echo "")
         
         if [[ -n "$jira_key" ]]; then
             echo "$jira_key"

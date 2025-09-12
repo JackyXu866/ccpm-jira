@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Issue Close Jira Implementation
-# Handles closing Jira issues with proper transitions, resolution handling, and local cleanup
+# Task Close Jira Implementation
+# Handles closing Jira tasks with proper transitions, resolution handling, and local cleanup
 
 set -e
 
@@ -12,9 +12,9 @@ source "$SCRIPT_DIR/resolution-handler.sh"
 source "$SCRIPT_DIR/pr-templates.sh"
 source "$SCRIPT_DIR/git-integration.sh"
 
-# Close a Jira issue with full workflow
-# Usage: close_jira_issue <issue_number> <resolution> <task_file> <epic_name> <pr_flag>
-close_jira_issue() {
+# Close a Jira task with full workflow
+# Usage: close_task_jira <task_number> <resolution> <task_file> <epic_name> <pr_flag>
+close_task_jira() {
     local issue_number="$1"
     local resolution="$2"
     local task_file="$3"
@@ -22,11 +22,11 @@ close_jira_issue() {
     local pr_flag="$5"
     
     if [[ -z "$issue_number" || -z "$resolution" || -z "$task_file" || -z "$epic_name" ]]; then
-        echo "ERROR: Required parameters missing for Jira issue closure" >&2
+        echo "ERROR: Required parameters missing for Jira task closure" >&2
         return 1
     fi
     
-    echo "🎯 Starting Jira issue closure workflow for #$issue_number"
+    echo "🎯 Starting Jira task closure workflow for #$issue_number"
     
     # Get Jira configuration
     local cloud_id
@@ -510,7 +510,7 @@ EOF
 validate_jira_setup() {
     echo "🔍 Validating Jira setup for closure operations..."
     
-    # Use the existing validation from issue-start-jira.sh
+    # Use the existing validation from task-start-jira.sh
     if command -v validate_jira_setup >/dev/null 2>&1; then
         if validate_jira_setup; then
             echo "✅ Jira setup validation passed"
@@ -533,7 +533,7 @@ validate_jira_setup() {
 }
 
 # Export functions for use by the main script
-export -f close_jira_issue
+export -f close_task_jira
 export -f handle_jira_closure_fallback
 export -f set_jira_resolution
 export -f update_jira_time_tracking

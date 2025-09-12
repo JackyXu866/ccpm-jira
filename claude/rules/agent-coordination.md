@@ -46,11 +46,11 @@ Make commits atomic and focused:
 ```bash
 # Good - Single purpose commit
 git add src/api/users.ts src/api/users.test.ts
-git commit -m "Issue #1234: Add user CRUD endpoints"
+git commit -m "PROJ-1234: Add user CRUD endpoints"
 
 # Bad - Mixed concerns
 git add src/api/* src/db/* src/ui/*
-git commit -m "Issue #1234: Multiple changes"
+git commit -m "PROJ-1234: Multiple changes"
 ```
 
 ## Communication Between Agents
@@ -102,7 +102,7 @@ Stream B:
 ### Conflict Detection
 ```bash
 # If commit fails due to conflict
-git commit -m "Issue #1234: Update"
+git commit -m "PROJ-1234: Update"
 # Error: conflicts exist
 
 # Agent should report and wait
@@ -167,9 +167,9 @@ When agents need to coordinate:
 When working on completely different files:
 ```bash
 # These can happen simultaneously
-Agent-A: git commit -m "Issue #1234: Update database"
-Agent-B: git commit -m "Issue #1235: Update UI"
-Agent-C: git commit -m "Issue #1236: Add tests"
+Agent-A: git commit -m "PROJ-1234: Update database"
+Agent-B: git commit -m "PROJ-1235: Update UI"
+Agent-C: git commit -m "PROJ-1236: Add tests"
 ```
 
 ### Sequential When Needed
@@ -177,13 +177,13 @@ When touching shared resources:
 ```bash
 # Agent A commits first
 git add src/types/index.ts
-git commit -m "Issue #1234: Update type definitions"
+git commit -m "PROJ-1234: Update type definitions"
 
 # Agent B waits, then proceeds
 # (After A's commit)
 git pull
 git add src/api/users.ts
-git commit -m "Issue #1235: Use new types"
+git commit -m "PROJ-1235: Use new types"
 ```
 
 ## Best Practices

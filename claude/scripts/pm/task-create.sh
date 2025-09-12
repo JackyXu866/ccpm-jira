@@ -274,10 +274,10 @@ batch_create_from_file() {
 #' Display usage information
 show_usage() {
     cat << 'EOF'
-Issue Creation Script - Create Jira tasks from CCPM data
+Task Creation Script - Create Jira tasks from CCPM data
 
 USAGE:
-    issue-create.sh COMMAND [OPTIONS]
+    task-create.sh COMMAND [OPTIONS]
 
 COMMANDS:
     create TASK_NAME TASK_DATA_JSON [ISSUE_TYPE] [PROJECT_KEY]
@@ -305,19 +305,19 @@ OPTIONS:
 
 EXAMPLES:
     # Create simple task
-    issue-create.sh create "Fix login bug" '{"status":"open","description":"Login fails on mobile"}'
+    task-create.sh create "Fix login bug" '{"status":"open","description":"Login fails on mobile"}'
     
     # Create with specific type and project
-    issue-create.sh create "New feature" '{"status":"open"}' "Story" "PROJ"
+    task-create.sh create "New feature" '{"status":"open"}' "Story" "PROJ"
     
     # Interactive creation
-    issue-create.sh interactive
+    task-create.sh interactive
     
     # Create from file
-    issue-create.sh from-file ./tasks/new-feature.json "Story"
+    task-create.sh from-file ./tasks/new-feature.json "Story"
     
     # Batch creation
-    issue-create.sh batch-file ./tasks/sprint-backlog.json "Task" "PROJ"
+    task-create.sh batch-file ./tasks/sprint-backlog.json "Task" "PROJ"
 
 TASK DATA FORMAT:
     {

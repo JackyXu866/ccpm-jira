@@ -2,21 +2,20 @@
 allowed-tools: Bash, Read, Write, LS
 ---
 
-# Issue Analyze
+# Task Analyze
 
-Analyze an issue to identify parallel work streams for maximum efficiency.
+Analyze a task to identify parallel work streams for maximum efficiency.
 
 ## Usage
 ```
-/pm:issue-analyze <issue_number>
+/pm:task-analyze <task_number>
 ```
 
 ## Quick Check
 
 1. **Find local task file:**
-   - First check if `.claude/epics/*/$ARGUMENTS.md` exists (new naming convention)
-   - If not found, search for file containing `github:.*issues/$ARGUMENTS` in frontmatter (old naming)
-   - If not found: "❌ No local task for issue #$ARGUMENTS. Run: /pm:import first"
+   - Check if `.claude/epics/*/$ARGUMENTS.md` exists
+   - If not found: "❌ No local task for task $ARGUMENTS. Run: /pm:import first"
 
 2. **Check for existing analysis:**
    ```bash
@@ -25,12 +24,7 @@ Analyze an issue to identify parallel work streams for maximum efficiency.
 
 ## Instructions
 
-### 1. Read Issue Context
-
-Get issue details from GitHub:
-```bash
-gh issue view $ARGUMENTS --json title,body,labels
-```
+### 1. Read Task Context
 
 Read local task file to understand:
 - Technical requirements
@@ -71,7 +65,7 @@ estimated_hours: {total_hours}
 parallelization_factor: {1.0-5.0}
 ---
 
-# Parallel Work Analysis: Issue #$ARGUMENTS
+# Parallel Work Analysis: Task $ARGUMENTS
 
 ## Overview
 {Brief description of what needs to be done}
@@ -159,7 +153,7 @@ Ensure:
 ### 5. Output
 
 ```
-✅ Analysis complete for issue #$ARGUMENTS
+✅ Analysis complete for task $ARGUMENTS
 
 Identified {count} parallel work streams:
   Stream A: {name} ({hours}h)
@@ -173,12 +167,12 @@ Parallelization potential: {factor}x speedup
 Files at risk of conflict:
   {list shared files if any}
 
-Next: Start work with /pm:issue-start $ARGUMENTS
+Next: Start work with /pm:task-start $ARGUMENTS
 ```
 
 ## Important Notes
 
-- Analysis is local only - not synced to GitHub
+- Analysis is local only - not synced to Jira
 - Focus on practical parallelization, not theoretical maximum
 - Consider agent expertise when assigning streams
 - Account for coordination overhead in estimates

@@ -146,7 +146,7 @@ decompose_epic_to_jira() {
   
   echo "📋 Next steps:"
   echo "   - Review tasks in Jira: $epic_issue_key"
-  echo "   - Start working on tasks: /pm:issue-start <task-number>"
+  echo "   - Start working on tasks: /pm:task-start <task-number>"
   echo "   - View epic status: /pm:epic-status $epic_name"
   
   return 0

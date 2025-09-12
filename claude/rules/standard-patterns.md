@@ -18,9 +18,9 @@ Only check what's absolutely necessary:
 1. If command needs specific directory/file:
    - Check it exists: `test -f {file} || echo "❌ {file} not found"`
    - If missing, tell user exact command to fix it
-2. If command needs GitHub:
-   - Assume `gh` is authenticated (it usually is)
-   - Only check on actual failure
+2. If command needs Jira:
+   - Check configuration exists
+   - MCP tools handle authentication
 ```
 
 ### DateTime Handling
@@ -76,18 +76,20 @@ else
 fi
 ```
 
-## GitHub Operations
+## Jira Operations
 
-### Trust gh CLI
+### Check Configuration
 ```markdown
-# Don't pre-check auth, just try the operation
-gh {command} || echo "❌ GitHub CLI failed. Run: gh auth login"
+# Check if Jira is configured
+if [ ! -f "claude/settings.local.json" ] || ! grep -q '"jira"' claude/settings.local.json; then
+  echo "❌ Jira not configured. Run: /pm:jira-init"
+fi
 ```
 
-### Simple Issue Operations
+### Use MCP Tools
 ```markdown
-# Get what you need in one call
-gh issue view {number} --json state,title,body
+# Delegate to MCP for Jira operations
+echo "Using MCP Atlassian tools to interact with Jira..."
 ```
 
 ## Common Patterns to Avoid
@@ -98,7 +100,7 @@ gh issue view {number} --json state,title,body
 1. Check directory exists
 2. Check permissions
 3. Check git status
-4. Check GitHub auth
+4. Check Jira auth
 5. Check rate limits
 6. Validate every field
 ```
@@ -167,7 +169,7 @@ Failed: auth.test.js (syntax error - line 42)
 
 **Simple is not simplistic** - We still handle errors properly, we just don't try to prevent every possible edge case. We trust that:
 - The file system usually works
-- GitHub CLI is usually authenticated  
+- Jira configuration is usually present  
 - Git repositories are usually valid
 - Users know what they're doing
 

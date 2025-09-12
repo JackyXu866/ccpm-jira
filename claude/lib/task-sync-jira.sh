@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Issue Sync Jira Implementation
+# Task Sync Jira Implementation
 # Handles bidirectional synchronization between local cache and Jira
 # Includes conflict detection and resolution
 
@@ -16,9 +16,9 @@ if [[ -f "$SCRIPT_DIR/sync-conflict-handler.sh" ]]; then
     source "$SCRIPT_DIR/sync-conflict-handler.sh"
 fi
 
-# Main Jira issue sync function
-# Usage: sync_jira_issue <issue_number> <task_file> <epic_name> [force_flag]
-sync_jira_issue() {
+# Main Jira task sync function
+# Usage: sync_task_jira <task_number> <task_file> <epic_name> [force_flag]
+sync_task_jira() {
     local issue_number="$1"
     local task_file="$2"
     local epic_name="$3"
@@ -29,7 +29,7 @@ sync_jira_issue() {
         return 1
     fi
     
-    echo "🔄 Starting Jira bidirectional sync for issue #$issue_number"
+    echo "🔄 Starting Jira bidirectional sync for task #$issue_number"
     
     # Get Jira configuration
     local cloud_id
@@ -43,7 +43,7 @@ sync_jira_issue() {
     # Get Jira issue key
     local jira_key
     if ! jira_key=$(get_jira_key_from_github_issue "$issue_number"); then
-        echo "❌ Could not find Jira key for issue #$issue_number"
+        echo "❌ Could not find Jira key for task #$issue_number"
         echo "   This issue may not be linked to Jira yet"
         return 1
     fi
@@ -618,7 +618,7 @@ validate_jira_sync_setup() {
 }
 
 # Export functions for use by the main script
-export -f sync_jira_issue
+export -f sync_task_jira
 export -f fetch_jira_issue_data
 export -f create_initial_cache
 export -f detect_sync_conflicts

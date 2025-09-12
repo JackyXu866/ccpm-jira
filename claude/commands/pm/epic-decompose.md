@@ -300,7 +300,7 @@ Mappings saved to: .claude/epics/memory-system/jira-mapping.json
 Next steps:
    - Review tasks: /pm:epic-show memory-system
    - Sync to GitHub: /pm:epic-sync memory-system
-   - Start work: /pm:issue-start 001
+   - Start work: /pm:task-start 001
 ```
 
 ### 5. Jira-Specific Configuration

@@ -66,7 +66,7 @@ graph LR
 
 # Push to Jira and start parallel execution
 /pm:epic-oneshot memory-system
-/pm:issue-start 1235
+/pm:task-start 1235
 ```
 
 ## What Makes This Different?
@@ -226,8 +226,8 @@ Pushes epic and tasks to Jira with appropriate relationships.
 ### 5. Execution Phase
 
 ```bash
-/pm:issue-start 1234  # Launch specialized agent
-/pm:issue-sync 1234   # Push progress updates
+/pm:task-start 1234  # Launch specialized agent
+/pm:task-sync 1234   # Push progress updates
 /pm:next             # Get next priority task
 ```
 Specialized agents implement tasks while maintaining progress updates and an audit trail.
@@ -264,21 +264,21 @@ Specialized agents implement tasks while maintaining progress updates and an aud
 - `/pm:epic-edit` - Edit epic details
 - `/pm:epic-refresh` - Update epic progress from tasks
 
-### Issue Commands
-- `/pm:issue-show` - Display issue and sub-issues
-- `/pm:issue-status` - Check issue status
-- `/pm:issue-start` - Begin work with specialized agent **[Jira]**
-- `/pm:issue-sync` - Push updates to Jira **[Jira]**
-- `/pm:issue-close` - Mark issue as complete **[Jira]**
-- `/pm:issue-reopen` - Reopen closed issue
-- `/pm:issue-edit` - Edit issue details
+### Task Commands
+- `/pm:task-show` - Display task and sub-tasks
+- `/pm:task-status` - Check task status
+- `/pm:task-start` - Begin work with specialized agent **[Jira]**
+- `/pm:task-sync` - Push updates to Jira **[Jira]**
+- `/pm:task-close` - Mark task as complete **[Jira]**
+- `/pm:task-reopen` - Reopen closed task
+- `/pm:task-edit` - Edit task details
 
 ### Sync Commands
 - `/pm:sync` - Full bidirectional sync with Jira **[Jira]**
 - `/pm:import` - Import existing Jira issues **[Jira]**
 
 ### Workflow Commands
-- `/pm:next` - Show next priority issue with epic context
+- `/pm:next` - Show next priority task with epic context
 - `/pm:status` - Overall project dashboard
 - `/pm:standup` - Daily standup report
 - `/pm:blocked` - Show blocked tasks
@@ -345,7 +345,7 @@ Your main conversation becomes the conductor, not the orchestra.
 - Completion status
 
 **What Actually Happens Locally:**
-- Issue #1234 explodes into 5 parallel agents
+- Task 1234 explodes into 5 parallel agents
 - Agents coordinate through Git commits
 - Complex orchestration hidden from view
 
@@ -414,12 +414,12 @@ Teams using this system report:
 # Creates issues: PROJ-100 (epic), PROJ-101, PROJ-102 (tasks)
 
 # Start development on a task
-/pm:issue-start 1235
+/pm:task-start 1235
 # Agent begins work, maintains local progress
 
 # Sync progress to Jira
-/pm:issue-sync 1235
-# Updates posted as issue comments
+/pm:task-sync 1235
+# Updates posted as task comments
 
 # Check overall status
 /pm:epic-show memory-system
@@ -500,7 +500,7 @@ Watch as structured planning transforms into shipped code.
 ### File Naming Convention
 - Tasks start as `001.md`, `002.md` during decomposition
 - Issue numbers map to local task files
-- Makes it easy to navigate: issue #1234 = file `1234.md`
+- Makes it easy to navigate: task 1234 = file `1234.md`
 
 ### Design Decisions
 - All commands operate on local files first for speed

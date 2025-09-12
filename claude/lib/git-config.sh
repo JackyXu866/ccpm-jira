@@ -130,11 +130,11 @@ get_branch_naming_format() {
 #######################################
 get_commit_message_format() {
   if ! load_git_integration_config; then
-    echo "Issue #{issue_key}: {message}"
+    echo "{issue_key}: {message}"
     return
   fi
   
-  jq -r '.integration.commit.message_format.format // "Issue #{issue_key}: {message}"' "$GIT_INTEGRATION_CONFIG" 2>/dev/null
+  jq -r '.integration.commit.message_format.format // "{issue_key}: {message}"' "$GIT_INTEGRATION_CONFIG" 2>/dev/null
 }
 
 #######################################

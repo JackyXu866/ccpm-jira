@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# Issue Start Jira Implementation
-# Handles starting work on an issue with Jira integration
-# Transitions issue to "In Progress", assigns to current user, creates feature branch
+# Task Start Jira Implementation
+# Handles starting work on a task with Jira integration
+# Transitions task to "In Progress", assigns to current user, creates feature branch
 
 set -e
 
@@ -11,9 +11,9 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/jira-transitions.sh"
 source "$SCRIPT_DIR/git-integration.sh"
 
-# Start work on a Jira issue
-# Usage: start_jira_issue <issue_number> <task_file> <epic_name>
-start_jira_issue() {
+# Start work on a Jira task
+# Usage: start_task_jira <task_number> <task_file> <epic_name>
+start_task_jira() {
     local issue_number="$1"
     local task_file="$2"
     local epic_name="$3"
@@ -23,7 +23,7 @@ start_jira_issue() {
         return 1
     fi
     
-    echo "🚀 Starting Jira issue workflow for #$issue_number"
+    echo "🚀 Starting Jira task workflow for #$issue_number"
     
     # Get Jira configuration
     local cloud_id
@@ -56,7 +56,7 @@ start_jira_issue() {
     # Transition issue to "In Progress" if Jira key exists
     if [[ -n "$jira_key" ]]; then
         echo "🔄 Transitioning Jira issue to In Progress..."
-        local transition_comment="Started work via ccpm-jira integration (GitHub issue #$issue_number)"
+        local transition_comment="Started work via ccpm-jira integration (task $issue_number)"
         
         if transition_jira_issue "$cloud_id" "$jira_key" "In Progress" "$transition_comment"; then
             echo "✅ Issue transitioned to In Progress"
@@ -85,14 +85,18 @@ start_jira_issue() {
     
     # Create feature branch with Jira key if available
     echo "🌱 Creating feature branch..."
-    local issue_title
-    issue_title=$(gh issue view "$issue_number" --json title --jq .title 2>/dev/null || echo "")
+    
+    # Get task title from local file
+    local task_title=""
+    if [[ -f "$task_file" ]]; then
+        task_title=$(grep '^name:' "$task_file" | head -1 | sed 's/^name: *//' | sed 's/"//g' || echo "")
+    fi
     
     local branch_description
-    if [[ -n "$issue_title" ]]; then
-        branch_description=$(echo "$issue_title" | head -c 30 | sed 's/[^a-zA-Z0-9 ]//g' | xargs)
+    if [[ -n "$task_title" ]]; then
+        branch_description=$(echo "$task_title" | head -c 30 | sed 's/[^a-zA-Z0-9 ]//g' | xargs)
     else
-        branch_description="issue-$issue_number"
+        branch_description="task-$issue_number"
     fi
     
     local branch_name=""
@@ -410,7 +414,7 @@ validate_jira_setup() {
 }
 
 # Export functions for use by the main script
-export -f start_jira_issue
+export -f start_task_jira
 export -f get_current_user_account_id
 export -f assign_jira_issue
 export -f create_jira_formatted_branch

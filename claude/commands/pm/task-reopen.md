@@ -2,21 +2,21 @@
 allowed-tools: Bash, Read, Write, LS
 ---
 
-# Issue Reopen
+# Task Reopen
 
-Reopen a closed issue.
+Reopen a closed task.
 
 ## Usage
 ```
-/pm:issue-reopen <issue_number> [reason]
+/pm:task-reopen <task_number> [reason]
 ```
 
 ## Instructions
 
 ### 1. Find Local Task File
 
-Search for task file with `github:.*issues/$ARGUMENTS` in frontmatter.
-If not found: "❌ No local task for issue #$ARGUMENTS"
+Search for task file in `.claude/epics/*/$ARGUMENTS.md`.
+If not found: "❌ No local task for task $ARGUMENTS"
 
 ### 2. Update Local Status
 
@@ -35,20 +35,12 @@ If progress file exists:
 - Reset completion to previous value or 0%
 - Add note about reopening with reason
 
-### 4. Reopen on GitHub
+### 4. Reopen in Jira
 
-```bash
-# Reopen with comment
-echo "🔄 Reopening issue
-
-Reason: $ARGUMENTS
-
----
-Reopened at: {timestamp}" | gh issue comment $ARGUMENTS --body-file -
-
-# Reopen the issue
-gh issue reopen $ARGUMENTS
-```
+If jira_key exists in task file:
+- Use MCP Atlassian tools to transition issue back to "To Do" or "Open" status
+- Add comment explaining the reopening reason
+- Update any custom fields as needed
 
 ### 5. Update Epic Progress
 
@@ -57,11 +49,11 @@ Recalculate epic progress with this task now open again.
 ### 6. Output
 
 ```
-🔄 Reopened issue #$ARGUMENTS
+🔄 Reopened task $ARGUMENTS
   Reason: {reason_if_provided}
   Epic progress: {updated_progress}%
   
-Start work with: /pm:issue-start $ARGUMENTS
+Start work with: /pm:task-start $ARGUMENTS
 ```
 
 ## Important Notes

@@ -51,7 +51,7 @@ if [[ ! "$ISSUE_NUMBER" =~ ^[0-9]+$ ]]; then
     exit 1
 fi
 
-echo "🎯 Closing issue #$ISSUE_NUMBER"
+echo "🎯 Closing task $ISSUE_NUMBER"
 echo "📝 Resolution: $RESOLUTION"
 echo "🔄 Mode: Jira"
 
@@ -67,7 +67,7 @@ for epic_dir in .claude/epics/*/; do
 done
 
 if [[ -z "$TASK_FILE" ]]; then
-    echo "❌ No local task for issue #$ISSUE_NUMBER"
+    echo "❌ No local task for $ISSUE_NUMBER"
     echo ""
     echo "This issue may not be managed by the PM system."
     exit 1
@@ -76,9 +76,9 @@ fi
 echo "📁 Found task: $TASK_FILE"
 
 # Delegate to Jira-specific implementation
-if [ -f "$SCRIPT_DIR/../../lib/issue-close-jira.sh" ]; then
-    source "$SCRIPT_DIR/../../lib/issue-close-jira.sh"
-    close_issue_jira "$ISSUE_NUMBER" "$RESOLUTION" "$TASK_FILE" "$CREATE_PR"
+if [ -f "$SCRIPT_DIR/../../lib/task-close-jira.sh" ]; then
+    source "$SCRIPT_DIR/../../lib/task-close-jira.sh"
+    close_task_jira "$ISSUE_NUMBER" "$RESOLUTION" "$TASK_FILE" "$CREATE_PR"
 else
     echo "❌ Jira implementation library not found"
     exit 1

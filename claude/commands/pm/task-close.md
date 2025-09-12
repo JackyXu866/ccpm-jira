@@ -2,17 +2,17 @@
 allowed-tools: Bash, Read, Write, LS
 ---
 
-# Issue Close
+# Task Close
 
-Mark an issue as complete and close it in Jira with proper resolution tracking.
+Mark a task as complete and close it in Jira with proper resolution tracking.
 
 ## Usage
 ```
-/pm:issue-close <issue_number> [resolution] [--create-pr]
+/pm:task-close <task_number> [resolution] [--create-pr]
 ```
 
 ## Arguments
-- `issue_number`: The local issue number to close
+- `task_number`: The local task number to close
 - `resolution`: Resolution type (default: "Fixed")
   - Fixed - Issue was resolved
   - Won't Fix - Issue will not be addressed

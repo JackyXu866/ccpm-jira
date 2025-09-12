@@ -82,7 +82,7 @@ $(cd .claude/epics/$ARGUMENTS && ls *.md | grep -E '^[0-9]+' | while read f; do
   echo "- $(grep '^name:' $f | cut -d: -f2)"
 done)
 
-Closes epic #$(grep 'github:' .claude/epics/$ARGUMENTS/epic.md | grep -oE '#[0-9]+')"
+Epic: $ARGUMENTS"
 ```
 
 ### 5. Handle Merge Conflicts
@@ -136,24 +136,12 @@ mv .claude/epics/$ARGUMENTS .claude/epics/archived/
 echo "✅ Epic archived: .claude/epics/archived/$ARGUMENTS"
 ```
 
-### 7. Update GitHub Issues
+### 7. Update Jira Issues
 
-Close related issues:
-```bash
-# Get issue numbers from epic
-epic_issue=$(grep 'github:' .claude/epics/archived/$ARGUMENTS/epic.md | grep -oE '[0-9]+$')
-
-# Close epic issue
-gh issue close $epic_issue -c "Epic completed and merged to main"
-
-# Close task issues
-for task_file in .claude/epics/archived/$ARGUMENTS/[0-9]*.md; do
-  issue_num=$(grep 'github:' $task_file | grep -oE '[0-9]+$')
-  if [ ! -z "$issue_num" ]; then
-    gh issue close $issue_num -c "Completed in epic merge"
-  fi
-done
-```
+If epic and tasks have jira_key:
+- Use MCP Atlassian tools to transition epic and tasks to "Done" status
+- Add comments noting merge completion
+- Update resolution fields
 
 ### 8. Final Output
 
@@ -170,7 +158,7 @@ Cleanup completed:
   ✓ Worktree removed
   ✓ Branch deleted
   ✓ Epic archived
-  ✓ GitHub issues closed
+  ✓ Jira issues updated
   
 Next steps:
   - Deploy changes if needed
@@ -208,4 +196,4 @@ Or abort and try later:
 - Run tests before merging when possible
 - Use --no-ff to preserve epic history
 - Archive epic data instead of deleting
-- Close GitHub issues to maintain sync
+- Update Jira issues to maintain sync

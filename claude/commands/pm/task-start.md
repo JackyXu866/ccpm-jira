@@ -2,13 +2,13 @@
 allowed-tools: Bash, Read, Write, LS, Task
 ---
 
-# Issue Start
+# Task Start
 
-Begin work on a Jira issue with parallel agents based on work stream analysis.
+Begin work on a task with parallel agents based on work stream analysis.
 
 ## Usage
 ```
-/pm:issue-start <issue_number> [--analyze]
+/pm:task-start <task_number> [--analyze]
 ```
 
 ## Prerequisites
@@ -18,16 +18,15 @@ Begin work on a Jira issue with parallel agents based on work stream analysis.
 ## Quick Check
 
 1. **Find local task file:**
-   - First check if `.claude/epics/*/$ARGUMENTS.md` exists (new naming)
-   - If not found, search for file containing `github:.*issues/$ARGUMENTS` in frontmatter (old naming)
-   - If not found: "❌ No local task for issue #$ARGUMENTS. This issue may have been created outside the PM system."
+   - Check if `.claude/epics/*/$ARGUMENTS.md` exists
+   - If not found: "❌ No local task for $ARGUMENTS. This task may have been created outside the PM system."
 
 3. **Check for analysis:**
    ```bash
-   test -f .claude/epics/*/$ARGUMENTS-analysis.md || echo "❌ No analysis found for issue #$ARGUMENTS
+   test -f .claude/epics/*/$ARGUMENTS-analysis.md || echo "❌ No analysis found for task $ARGUMENTS
    
-   Run: /pm:issue-analyze $ARGUMENTS first
-   Or: /pm:issue-start $ARGUMENTS --analyze to do both"
+   Run: /pm:task-analyze $ARGUMENTS first
+   Or: /pm:task-start $ARGUMENTS --analyze to do both"
    ```
    If no analysis exists and no --analyze flag, stop execution.
 
@@ -64,7 +63,7 @@ Read `.claude/epics/{epic_name}/$ARGUMENTS-analysis.md`:
 
 ```bash
 # The script handles both modes automatically
-./claude/scripts/pm/issue-start.sh $ARGUMENTS
+./claude/scripts/pm/task-start.sh $ARGUMENTS
 ```
 
 ### 4. Setup Progress Tracking
@@ -107,10 +106,10 @@ status: in_progress
 Launch agent using Task tool:
 ```yaml
 Task:
-  description: "Issue #$ARGUMENTS Stream {X}"
+  description: "Task $ARGUMENTS Stream {X}"
   subagent_type: "{agent_type}"
   prompt: |
-    You are working on Issue #$ARGUMENTS in the epic worktree.
+    You are working on task $ARGUMENTS in the epic worktree.
     
     Worktree location: ../epic-{epic_name}/
     Your stream: {stream_name}
@@ -122,7 +121,7 @@ Task:
     Requirements:
     1. Read full task from: .claude/epics/{epic_name}/{task_file}
     2. Work ONLY in your assigned files
-    3. Commit frequently with format: "Issue #$ARGUMENTS: {specific change}"
+    3. Commit frequently with format: "{JIRA-KEY}: {specific change}"
     4. Update progress in: .claude/epics/{epic_name}/updates/$ARGUMENTS/stream-{X}.md
     5. Follow coordination rules in /rules/agent-coordination.md
     
@@ -137,7 +136,7 @@ Task:
 ### 6. Output
 
 ```
-✅ Started parallel work on issue #$ARGUMENTS
+✅ Started parallel work on task $ARGUMENTS
 
 Epic: {epic_name}
 Worktree: ../epic-{epic_name}/
@@ -152,7 +151,7 @@ Progress tracking:
   .claude/epics/{epic_name}/updates/$ARGUMENTS/
 
 Monitor with: /pm:epic-status {epic_name}
-Sync updates: /pm:issue-sync $ARGUMENTS
+Sync updates: /pm:task-sync $ARGUMENTS
 ```
 
 ## Error Handling
@@ -165,7 +164,7 @@ If any step fails, report clearly:
 ## Important Notes
 
 Follow `/rules/datetime.md` for timestamps.
-Keep it simple - trust that GitHub and file system work.
+Keep it simple - trust that file system works.
 
 ## Jira Integration Details
 
@@ -180,7 +179,7 @@ Keep it simple - trust that GitHub and file system work.
 ## Example Output
 
 ```
-🚀 Starting work on issue #123
+🚀 Starting work on task 123
 🔄 Mode: Jira
 📋 Checking task file...
    Task: Implement user authentication

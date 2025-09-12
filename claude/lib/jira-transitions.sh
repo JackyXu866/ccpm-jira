@@ -374,7 +374,7 @@ get_jira_cloud_id() {
     echo "$cloud_id"
 }
 
-# Get Jira issue key from GitHub issue
+# Get Jira issue key from local task file
 # Usage: get_jira_key_from_github_issue <issue_number>
 get_jira_key_from_github_issue() {
     local issue_number="$1"
@@ -382,21 +382,6 @@ get_jira_key_from_github_issue() {
     if [[ -z "$issue_number" ]]; then
         echo "ERROR: issue_number is required" >&2
         return 1
-    fi
-    
-    # Try to get from GitHub issue body
-    if command -v gh >/dev/null 2>&1; then
-        local issue_body
-        issue_body=$(gh issue view "$issue_number" --json body --jq .body 2>/dev/null || echo "")
-        
-        # Look for Jira key pattern
-        local jira_key
-        jira_key=$(echo "$issue_body" | grep -oE '[A-Z]+-[0-9]+' | head -n1 || echo "")
-        
-        if [[ -n "$jira_key" ]]; then
-            echo "$jira_key"
-            return 0
-        fi
     fi
     
     # Check local task files for Jira link
@@ -423,7 +408,7 @@ get_jira_key_from_github_issue() {
         fi
     fi
     
-    echo "ERROR: Could not find Jira key for GitHub issue #$issue_number" >&2
+    echo "ERROR: Could not find Jira key for task $issue_number" >&2
     return 1
 }
 

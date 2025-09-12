@@ -242,7 +242,7 @@ EOF
   echo ""
   echo "📋 Next steps:"
   echo "   - Review and refine task details"
-  echo "   - Start working on tasks: /pm:issue-start <task-number>"
+  echo "   - Start working on tasks: /pm:task-start <task-number>"
   echo "   - Sync to remote: /pm:epic-sync $epic_name"
 fi
 

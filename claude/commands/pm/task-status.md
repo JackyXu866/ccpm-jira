@@ -2,29 +2,28 @@
 allowed-tools: Bash, Read, LS
 ---
 
-# Issue Status
+# Task Status
 
-Check issue status (open/closed) and current state.
+Check task status (open/closed) and current state.
 
 ## Usage
 ```
-/pm:issue-status <issue_number>
+/pm:task-status <task_number>
 ```
 
 ## Instructions
 
-You are checking the current status of a GitHub issue and providing a quick status report for: **Issue #$ARGUMENTS**
+You are checking the current status of a task and providing a quick status report for: **Task $ARGUMENTS**
 
-### 1. Fetch Issue Status
-Use GitHub CLI to get current status:
-```bash
-gh issue view #$ARGUMENTS --json state,title,labels,assignees,updatedAt
-```
+### 1. Fetch Task Status
+- Find local task file in `.claude/epics/*/$ARGUMENTS.md`
+- If jira_key exists, use MCP Atlassian tools to get Jira issue status
+- Otherwise check local status field
 
 ### 2. Status Display
 Show concise status information:
 ```
-🎫 Issue #$ARGUMENTS: {Title}
+🎫 Task $ARGUMENTS: {Title}
    
 📊 Status: {OPEN/CLOSED}
    Last update: {timestamp}
@@ -34,7 +33,7 @@ Show concise status information:
 ```
 
 ### 3. Epic Context
-If issue is part of an epic:
+If task is part of an epic:
 ```
 📚 Epic Context:
    Epic: {epic_name}
@@ -63,16 +62,16 @@ Use clear visual indicators:
 Based on status, suggest actions:
 ```
 🚀 Suggested Actions:
-   - Start work: /pm:issue-start $ARGUMENTS
-   - Sync updates: /pm:issue-sync $ARGUMENTS
-   - Close issue: gh issue close #$ARGUMENTS
-   - Reopen issue: gh issue reopen #$ARGUMENTS
+   - Start work: /pm:task-start $ARGUMENTS
+   - Sync updates: /pm:task-sync $ARGUMENTS
+   - Close task: /pm:task-close $ARGUMENTS
+   - Reopen task: /pm:task-reopen $ARGUMENTS
 ```
 
 ### 7. Batch Status
-If checking multiple issues, support comma-separated list:
+If checking multiple tasks, support comma-separated list:
 ```
-/pm:issue-status 123,124,125
+/pm:task-status 123,124,125
 ```
 
-Keep the output concise but informative, perfect for quick status checks during development of Issue #$ARGUMENTS.
+Keep the output concise but informative, perfect for quick status checks during development of Task $ARGUMENTS.

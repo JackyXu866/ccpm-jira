@@ -41,7 +41,7 @@ if [[ ! "$ISSUE_NUMBER" =~ ^[0-9]+$ ]]; then
     exit 1
 fi
 
-echo "🔄 Syncing issue #$ISSUE_NUMBER"
+echo "🔄 Syncing task $ISSUE_NUMBER"
 echo "🔄 Mode: Jira"
 
 # Find local task file
@@ -56,7 +56,7 @@ for epic_dir in .claude/epics/*/; do
 done
 
 if [[ -z "$TASK_FILE" ]]; then
-    echo "❌ No local task for issue #$ISSUE_NUMBER"
+    echo "❌ No local task for $ISSUE_NUMBER"
     echo ""
     echo "This issue may have been created outside the PM system."
     echo "To import: /pm:import $ISSUE_NUMBER"
@@ -66,9 +66,9 @@ fi
 echo "📁 Found task: $TASK_FILE"
 
 # Delegate to Jira-specific implementation
-if [ -f "$SCRIPT_DIR/../../lib/issue-sync-jira.sh" ]; then
-    source "$SCRIPT_DIR/../../lib/issue-sync-jira.sh"
-    sync_issue_jira "$ISSUE_NUMBER" "$TASK_FILE" "$FORCE_FLAG"
+if [ -f "$SCRIPT_DIR/../../lib/task-sync-jira.sh" ]; then
+    source "$SCRIPT_DIR/../../lib/task-sync-jira.sh"
+    sync_task_jira "$ISSUE_NUMBER" "$TASK_FILE" "$FORCE_FLAG"
 else
     echo "❌ Jira implementation library not found"
     exit 1

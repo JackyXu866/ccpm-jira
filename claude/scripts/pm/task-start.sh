@@ -36,7 +36,7 @@ if [[ ! "$ISSUE_NUMBER" =~ ^[0-9]+$ ]]; then
     exit 1
 fi
 
-echo "🚀 Starting work on issue #$ISSUE_NUMBER"
+echo "🚀 Starting work on task $ISSUE_NUMBER"
 echo "🔄 Mode: Jira"
 
 # Find local task file
@@ -51,7 +51,7 @@ for epic_dir in .claude/epics/*/; do
 done
 
 if [[ -z "$TASK_FILE" ]]; then
-    echo "❌ No local task for issue #$ISSUE_NUMBER"
+    echo "❌ No local task for $ISSUE_NUMBER"
     echo ""
     echo "This issue may have been created outside the PM system."
     echo "To import: /pm:import $ISSUE_NUMBER"
@@ -68,13 +68,13 @@ if [[ ! -f "$ANALYSIS_FILE" ]]; then
     if [[ "$ANALYZE_FLAG" == "--analyze" ]]; then
         echo "🔍 Running analysis first..."
         # In a real implementation, this would call the analyze command
-        echo "❌ Auto-analysis not yet implemented. Run: /pm:issue-analyze $ISSUE_NUMBER"
+        echo "❌ Auto-analysis not yet implemented. Run: /pm:task-analyze $ISSUE_NUMBER"
         exit 1
     else
-        echo "❌ No analysis found for issue #$ISSUE_NUMBER"
+        echo "❌ No analysis found for task $ISSUE_NUMBER"
         echo ""
-        echo "Run: /pm:issue-analyze $ISSUE_NUMBER first"
-        echo "Or: /pm:issue-start $ISSUE_NUMBER --analyze to do both"
+        echo "Run: /pm:task-analyze $ISSUE_NUMBER first"
+        echo "Or: /pm:task-start $ISSUE_NUMBER --analyze to do both"
         exit 1
     fi
 fi
@@ -88,9 +88,9 @@ fi
 echo "✅ Worktree exists: ../epic-$EPIC_NAME"
 
 # Delegate to Jira-specific implementation
-if [ -f "$SCRIPT_DIR/../../lib/issue-start-jira.sh" ]; then
-    source "$SCRIPT_DIR/../../lib/issue-start-jira.sh"
-    start_issue_jira "$ISSUE_NUMBER" "$TASK_FILE" "$EPIC_NAME"
+if [ -f "$SCRIPT_DIR/../../lib/task-start-jira.sh" ]; then
+    source "$SCRIPT_DIR/../../lib/task-start-jira.sh"
+    start_task_jira "$ISSUE_NUMBER" "$TASK_FILE" "$EPIC_NAME"
 else
     echo "❌ Jira implementation library not found"
     exit 1

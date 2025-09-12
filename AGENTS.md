@@ -29,7 +29,7 @@ Specialized agents that do heavy work and return concise summaries to preserve c
 - **Returns**: Test results summary with failure analysis
 
 ### 🔀 `parallel-worker`
-- **Purpose**: Coordinate multiple parallel work streams for an issue
+- **Purpose**: Coordinate multiple parallel work streams for a task
 - **Pattern**: Read analysis → Spawn sub-agents → Consolidate results → Return summary
 - **Usage**: When executing parallel work streams in a worktree
 - **Returns**: Consolidated status of all parallel work
@@ -69,7 +69,7 @@ Returns: "2/10 tests failed: [failure summary]"
 Main thread never sees: Verbose test output and logs
 
 # Parallel implementation
-Task: "Implement issue #1234 with parallel streams"
+Task: "Implement task #1234 with parallel streams"
 Agent: parallel-worker
 Returns: "Completed 4/4 streams, 15 files modified"
 Main thread never sees: Individual implementation details
@@ -103,8 +103,8 @@ New agents should follow these principles:
 
 Agents integrate seamlessly with the PM command system:
 
-- `/pm:issue-analyze` → Identifies work streams
-- `/pm:issue-start` → Spawns parallel-worker agent
+- `/pm:task-analyze` → Identifies work streams
+- `/pm:task-start` → Spawns parallel-worker agent
 - parallel-worker → Spawns multiple sub-agents
 - Sub-agents → Work in parallel in the worktree
 - Results → Consolidated back to main thread

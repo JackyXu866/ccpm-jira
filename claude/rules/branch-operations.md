@@ -22,8 +22,8 @@ The branch will be created and pushed to origin with upstream tracking.
 ### Agent Commits
 - Agents commit directly to the branch
 - Use small, focused commits
-- Commit message format: `Issue #{number}: {description}`
-- Example: `Issue #1234: Add user authentication schema`
+- Commit message format: `{JIRA-KEY}: {description}`
+- Example: `PROJ-1234: Add user authentication schema`
 
 ### File Operations
 ```bash
@@ -32,7 +32,7 @@ The branch will be created and pushed to origin with upstream tracking.
 
 # Normal git operations work
 git add {files}
-git commit -m "Issue #{number}: {change}"
+git commit -m "{JIRA-KEY}: {change}"
 
 # View branch status
 git status
@@ -45,12 +45,12 @@ Multiple agents can work in the same branch if they coordinate file access:
 ```bash
 # Agent A works on API
 git add src/api/*
-git commit -m "Issue #1234: Add user endpoints"
+git commit -m "PROJ-1234: Add user endpoints"
 
 # Agent B works on UI (coordinate to avoid conflicts!)
 git pull origin epic/{name}  # Get latest changes
 git add src/ui/*
-git commit -m "Issue #1235: Add dashboard component"
+git commit -m "PROJ-1235: Add dashboard component"
 ```
 
 ## Merging Branches

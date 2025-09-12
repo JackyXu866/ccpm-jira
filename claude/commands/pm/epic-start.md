@@ -209,7 +209,7 @@ Monitor with: /pm:epic-status $ARGUMENTS
 If agent launch fails:
 ```
 ❌ Failed to start Agent-{id}
-  Issue: #{issue}
+  Task: {issue}
   Stream: {stream}
   Error: {reason}
 

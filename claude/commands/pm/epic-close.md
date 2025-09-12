@@ -35,12 +35,12 @@ completed: {current_datetime}
 
 If epic references a PRD, update its status to "complete".
 
-### 4. Close Epic on GitHub
+### 4. Close Epic in Jira
 
-If epic has GitHub issue:
-```bash
-gh issue close {epic_issue_number} --comment "✅ Epic completed - all tasks done"
-```
+If epic has jira_key:
+- Use MCP Atlassian tools to transition epic to "Done" status
+- Add comment noting all tasks are complete
+- Update resolution field
 
 ### 5. Archive Option
 

@@ -1,19 +1,19 @@
-# Issue Sync
+# Task Sync
 
-Synchronize local issue data with Jira. Handles bidirectional sync between local task files and Jira issues.
+Synchronize local task data with Jira. Handles bidirectional sync between local task files and Jira tasks.
 
 ## Usage
 ```
-/pm:issue-sync <issue_number> [--force]
+/pm:task-sync <task_number> [--force]
 ```
 
 ## Arguments
-- `issue_number`: The local issue number to sync
+- `task_number`: The local task number to sync
 - `--force`: Force sync even if recently synced (within 5 minutes)
 
 ## Quick Check
 1. **Task File Exists:**
-   - If `.claude/epics/*/$ARGUMENTS.md` not found, tell user: "❌ Issue #$ARGUMENTS not found"
+   - If `.claude/epics/*/$ARGUMENTS.md` not found, tell user: "❌ Task #$ARGUMENTS not found"
    
 2. **Jira Configuration:**
    - Check if Jira is enabled in settings
@@ -21,7 +21,7 @@ Synchronize local issue data with Jira. Handles bidirectional sync between local
 
 ## Instructions
 
-You are synchronizing local development progress with Jira for: **Issue #$ARGUMENTS**
+You are synchronizing local development progress with Jira for: **Task #$ARGUMENTS**
 
 ### 1. Check Jira Configuration
 - Verify Jira is enabled in claude/settings.local.json
@@ -49,7 +49,7 @@ last_sync: [current datetime]
 
 ### 5. Output Summary
 ```
-🔄 Synced issue #$ARGUMENTS with Jira
+🔄 Synced task #$ARGUMENTS with Jira
 
 📝 Update summary:
    Status: {status}
@@ -74,13 +74,13 @@ last_sync: [current datetime]
 
 **Successful Sync:**
 ```
-🔄 Syncing issue #123
+🔄 Syncing task #123
 📁 Found task: .claude/epics/feature-auth/123.md
 🔄 Mode: Jira
 📊 Fetching from Jira...
 ✅ Updated local cache
 ✅ Pushed changes to Jira
-✅ Issue #123 synchronized successfully
+✅ Task #123 synchronized successfully
 ```
 
 ## Common Issues
@@ -89,8 +89,8 @@ last_sync: [current datetime]
    - Run: /pm:jira-init
    - Connect MCP: /mcp atlassian
 
-2. **Issue Not Found in Jira**
-   - Verify issue exists in Jira
+2. **Task Not Found in Jira**
+   - Verify task exists in Jira
    - Check project key is correct
    - Ensure you have access permissions
 

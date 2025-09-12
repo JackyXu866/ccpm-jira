@@ -110,7 +110,7 @@ Organization:
 Next steps:
   • Review imported tasks
   • Run /pm:sync to push any updates back
-  • Start work with /pm:issue-start
+  • Start work with /pm:task-start
 ```
 
 ## Import Strategies

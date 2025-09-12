@@ -25,7 +25,7 @@
       "message_format": {
         "include_issue_key": true,
         "position": "prefix",
-        "format": "Issue #{issue_key}: {message}",
+        "format": "{issue_key}: {message}",
         "enforce_format": false,
         "smart_commit": {
           "enabled": false,
@@ -33,7 +33,7 @@
         }
       },
       "templates": {
-        "default": "Issue #{issue_key}: {type}: {description}",
+        "default": "{issue_key}: {type}: {description}",
         "types": ["feat", "fix", "docs", "style", "refactor", "test", "chore"]
       }
     },

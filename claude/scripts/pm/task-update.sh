@@ -422,10 +422,10 @@ sync_task_from_file() {
 #' Display usage information
 show_usage() {
     cat << 'EOF'
-Issue Update Script - Update Jira tasks with CCPM data
+Task Update Script - Update Jira tasks with CCPM data
 
 USAGE:
-    issue-update.sh COMMAND [OPTIONS]
+    task-update.sh COMMAND [OPTIONS]
 
 COMMANDS:
     update ISSUE_KEY UPDATE_DATA_JSON
@@ -464,25 +464,25 @@ OPTIONS:
 
 EXAMPLES:
     # Update complete task
-    issue-update.sh update "PROJ-123" '{"name":"Updated task","status":"in-progress"}'
+    task-update.sh update "PROJ-123" '{"name":"Updated task","status":"in-progress"}'
     
     # Update specific fields
-    issue-update.sh fields "PROJ-123" '{"description":"New description","priority":"High"}'
+    task-update.sh fields "PROJ-123" '{"description":"New description","priority":"High"}'
     
     # Change status
-    issue-update.sh status "PROJ-123" "in-progress"
+    task-update.sh status "PROJ-123" "in-progress"
     
     # Assign task
-    issue-update.sh assign "PROJ-123" "user@company.com"
+    task-update.sh assign "PROJ-123" "user@company.com"
     
     # Interactive mode
-    issue-update.sh interactive
+    task-update.sh interactive
     
     # Sync from file
-    issue-update.sh sync-file "PROJ-123" ./tasks/updated-task.json
+    task-update.sh sync-file "PROJ-123" ./tasks/updated-task.json
     
     # Bulk status update
-    issue-update.sh bulk-status ./issue-keys.txt "completed"
+    task-update.sh bulk-status ./issue-keys.txt "completed"
 
 FIELD UPDATE FORMAT:
     {
