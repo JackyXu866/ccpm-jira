@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Issue Close Script - Jira Integration Only
-# Closes a Jira issue with resolution and optional PR creation
+# Task Close Script - Jira Integration Only
+# Closes a Jira task with resolution and optional PR creation
 
 set -e
 
@@ -19,7 +19,7 @@ if [ ! -f "claude/settings.local.json" ] || ! grep -q '"jira"' claude/settings.l
 fi
 
 # Parse command line arguments
-ISSUE_NUMBER="$1"
+TASK_NUMBER="$1"
 RESOLUTION="${2:-Fixed}"
 CREATE_PR=""
 
@@ -35,23 +35,23 @@ for arg in "$@"; do
 done
 
 # Validation
-if [[ -z "$ISSUE_NUMBER" ]]; then
-    echo "❌ Usage: issue-close <issue_number> [resolution] [--create-pr]"
+if [[ -z "$TASK_NUMBER" ]]; then
+    echo "❌ Usage: task-close <task_number> [resolution] [--create-pr]"
     echo ""
-    echo "Example: issue-close 42"
-    echo "Example: issue-close 42 \"Won't Fix\""
-    echo "Example: issue-close 42 Fixed --create-pr"
+    echo "Example: task-close 42"
+    echo "Example: task-close 42 \"Won't Fix\""
+    echo "Example: task-close 42 Fixed --create-pr"
     echo ""
     echo "Valid resolutions: Fixed, Won't Fix, Duplicate, Incomplete, Cannot Reproduce"
     exit 1
 fi
 
-if [[ ! "$ISSUE_NUMBER" =~ ^[0-9]+$ ]]; then
-    echo "❌ Issue number must be numeric"
+if [[ ! "$TASK_NUMBER" =~ ^[0-9]+$ ]]; then
+    echo "❌ Task number must be numeric"
     exit 1
 fi
 
-echo "🎯 Closing task $ISSUE_NUMBER"
+echo "🎯 Closing task $TASK_NUMBER"
 echo "📝 Resolution: $RESOLUTION"
 echo "🔄 Mode: Jira"
 
@@ -67,7 +67,7 @@ for epic_dir in .claude/epics/*/; do
 done
 
 if [[ -z "$TASK_FILE" ]]; then
-    echo "❌ No local task for $ISSUE_NUMBER"
+    echo "❌ No local task for $TASK_NUMBER"
     echo ""
     echo "This issue may not be managed by the PM system."
     exit 1
@@ -76,9 +76,9 @@ fi
 echo "📁 Found task: $TASK_FILE"
 
 # Delegate to Jira-specific implementation
-if [ -f "$SCRIPT_DIR/../../lib/task-close-jira.sh" ]; then
-    source "$SCRIPT_DIR/../../lib/task-close-jira.sh"
-    close_task_jira "$ISSUE_NUMBER" "$RESOLUTION" "$TASK_FILE" "$CREATE_PR"
+if [ -f "$SCRIPT_DIR/../lib/task-close.sh" ]; then
+    source "$SCRIPT_DIR/../lib/task-close.sh"
+    close_task_jira "$TASK_NUMBER" "$RESOLUTION" "$TASK_FILE" "$CREATE_PR"
 else
     echo "❌ Jira implementation library not found"
     exit 1

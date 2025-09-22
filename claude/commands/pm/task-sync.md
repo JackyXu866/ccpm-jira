@@ -74,13 +74,13 @@ last_sync: [current datetime]
 
 **Successful Sync:**
 ```
-🔄 Syncing task #123
+🔄 Syncing task PROJ-123
 📁 Found task: .claude/epics/feature-auth/123.md
 🔄 Mode: Jira
 📊 Fetching from Jira...
 ✅ Updated local cache
 ✅ Pushed changes to Jira
-✅ Task #123 synchronized successfully
+✅ Task PROJ-123 synchronized successfully
 ```
 
 ## Common Issues

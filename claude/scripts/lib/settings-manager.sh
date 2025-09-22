@@ -87,18 +87,6 @@ settings_migrate() {
       settings_set "jira.project_id" "$project_id"
     fi
     
-    # Try to detect GitHub settings from git remote
-    if command -v git &> /dev/null && git remote -v | grep -q origin; then
-      local remote_url=$(git remote get-url origin 2>/dev/null)
-      if [[ "$remote_url" =~ github\.com[:/]([^/]+)/([^/]+)(\.git)?$ ]]; then
-        local owner="${BASH_REMATCH[1]}"
-        local repo="${BASH_REMATCH[2]}"
-        repo="${repo%.git}"  # Remove .git suffix if present
-        
-        settings_set "github.owner" "$owner"
-        settings_set "github.repo" "$repo"
-      fi
-    fi
     
     echo "✅ Settings migrated successfully"
   fi
@@ -112,11 +100,6 @@ settings_init() {
     cat > "$SETTINGS_FILE" << 'EOF'
 {
   "version": "2.0.0",
-  "github": {
-    "owner": "",
-    "repo": "",
-    "default_branch": "main"
-  },
   "jira": {
     "enabled": false,
     "cloud_id": "",

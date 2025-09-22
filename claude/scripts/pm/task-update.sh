@@ -14,7 +14,7 @@ set -euo pipefail
 
 # Source dependencies
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "${SCRIPT_DIR}/../../lib/jira-task-ops.sh"
+source "${SCRIPT_DIR}/../lib/task-ops.sh"
 
 # =============================================================================
 # Input Validation Functions
@@ -489,7 +489,6 @@ FIELD UPDATE FORMAT:
         "name": "Updated task name",
         "status": "in-progress",
         "description": "Updated description",
-        "github": "https://github.com/user/repo/issues/124",
         "priority": "High"
     }
 

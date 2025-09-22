@@ -25,7 +25,6 @@ decompose_epic_to_jira() {
   
   # Extract epic metadata
   local epic_jira_url=$(grep "^jira:" "$epic_file" | head -1 | sed 's/^jira: *//')
-  local epic_github_url=$(grep "^github:" "$epic_file" | head -1 | sed 's/^github: *//')
   local epic_status=$(grep "^status:" "$epic_file" | head -1 | sed 's/^status: *//')
   
   # Determine project key
@@ -72,7 +71,7 @@ decompose_epic_to_jira() {
     if grep -q "^jira:" "$epic_file"; then
       sed -i.bak "/^jira:/c\jira: $epic_url" "$epic_file"
     else
-      sed -i.bak '/^github:/a\jira: '"$epic_url" "$epic_file"
+      sed -i.bak '1a\jira: '"$epic_url" "$epic_file"
     fi
     
     sed -i.bak "/^updated:/c\updated: $current_date" "$epic_file"

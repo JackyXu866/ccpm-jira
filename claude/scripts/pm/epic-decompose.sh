@@ -56,11 +56,11 @@ echo ""
 # Delegate to appropriate implementation
 if [ "$jira_mode" = true ]; then
   # Use Jira decompose implementation
-  if [ -f "claude/lib/epic-decompose-jira.sh" ]; then
-    source "claude/lib/epic-decompose-jira.sh"
+  if [ -f "claude/scripts/lib/epic-decompose.sh" ]; then
+    source "claude/scripts/lib/epic-decompose.sh"
     decompose_epic_to_jira "$epic_name" "$prd_file"
   else
-    echo "❌ Jira decompose module not found: claude/lib/epic-decompose-jira.sh"
+    echo "❌ Jira decompose module not found: claude/scripts/lib/epic-decompose.sh"
     echo "Falling back to local decomposition..."
     jira_mode=false
   fi

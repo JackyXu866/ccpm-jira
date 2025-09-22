@@ -375,20 +375,20 @@ get_jira_cloud_id() {
 }
 
 # Get Jira issue key from local task file
-# Usage: get_jira_key_from_github_issue <issue_number>
-get_jira_key_from_github_issue() {
-    local issue_number="$1"
+# Usage: get_jira_key_from_task <task_number>
+get_jira_key_from_task() {
+    local task_number="$1"
     
-    if [[ -z "$issue_number" ]]; then
-        echo "ERROR: issue_number is required" >&2
+    if [[ -z "$task_number" ]]; then
+        echo "ERROR: task_number is required" >&2
         return 1
     fi
     
     # Check local task files for Jira link
     local task_file=""
     for epic_dir in .claude/epics/*; do
-        if [[ -d "$epic_dir" ]] && [[ -f "$epic_dir/$issue_number.md" ]]; then
-            task_file="$epic_dir/$issue_number.md"
+        if [[ -d "$epic_dir" ]] && [[ -f "$epic_dir/$task_number.md" ]]; then
+            task_file="$epic_dir/$task_number.md"
             break
         fi
     done
@@ -408,7 +408,7 @@ get_jira_key_from_github_issue() {
         fi
     fi
     
-    echo "ERROR: Could not find Jira key for task $issue_number" >&2
+    echo "ERROR: Could not find Jira key for task $task_number" >&2
     return 1
 }
 
@@ -439,5 +439,5 @@ export -f map_local_to_jira_status
 export -f map_jira_to_local_status
 export -f handle_custom_workflow
 export -f get_jira_cloud_id
-export -f get_jira_key_from_github_issue
+export -f get_jira_key_from_task
 export -f log_transition

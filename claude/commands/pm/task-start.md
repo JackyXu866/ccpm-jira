@@ -32,17 +32,25 @@ Begin work on a task with parallel agents based on work stream analysis.
 
 ## Instructions
 
-### 1. Ensure Worktree Exists
+### 1. Create Task Worktree
 
-Check if epic worktree exists:
+Create task-specific worktree:
 ```bash
 # Find epic name from task file
 epic_name={extracted_from_path}
+task_id="PROJ-$ARGUMENTS"  # Or extract from Jira
 
-# Check worktree
-if ! git worktree list | grep -q "epic-$epic_name"; then
-  echo "❌ No worktree for epic. Run: /pm:epic-start $epic_name"
-  exit 1
+# Create worktree with pattern: {task-id}-{epic-name}
+worktree_name="${task_id}-${epic_name}"
+branch_name="task/${task_id}"
+
+if ! git worktree list | grep -q "$worktree_name"; then
+  git checkout main
+  git pull origin main
+  git worktree add ../$worktree_name -b $branch_name
+  echo "✅ Created worktree: ../$worktree_name"
+else
+  echo "✅ Using existing worktree: ../$worktree_name"
 fi
 ```
 

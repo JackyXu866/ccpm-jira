@@ -9,7 +9,7 @@ This library provides functions for integrating Git branch operations with Jira 
 ## Key Functions
 
 ### Branch Creation
-- `get_jira_key <issue_number>` - Extract Jira key from GitHub issue
+- `get_jira_key <task_number>` - Extract Jira key from GitHub task
 - `generate_branch_name <jira_key> [description]` - Create formatted branch name
 - `create_jira_branch <issue_number> [description]` - Full branch creation workflow
 
@@ -54,9 +54,9 @@ The library supports configuration via `claude/config/git-integration.json`:
 
 ```bash
 # Source the library
-source claude/lib/git-integration.sh
+source claude/scripts/lib/git-integration.sh
 
-# Create a Jira branch for issue #123
+# Create a Jira branch for task PROJ-123
 create_jira_branch 123 "fix authentication bug"
 
 # Validate current branch

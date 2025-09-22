@@ -108,10 +108,10 @@ execute_command
 handle_output
 ```
 
-### 2. **Library Modules** (`claude/lib/`)
+### 2. **Library Modules** (`claude/scripts/lib/`)
 
 #### Core Libraries:
-- `jira-transitions.sh`: State machine for issue status
+- `transitions.sh`: State machine for issue status
 - `git-integration.sh`: Git operations and branch management
 - `search-mcp.sh`: MCP search integration
 - `query-router.sh`: Intelligent query routing

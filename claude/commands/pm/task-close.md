@@ -28,7 +28,7 @@ Mark a task as complete and close it in Jira with proper resolution tracking.
 ### 1. Find Local Task File
 
 Check if `.claude/epics/*/$ARGUMENTS.md` exists.
-If not found: "❌ No local task for issue #$ARGUMENTS"
+If not found: "❌ No local task for task #$ARGUMENTS"
 
 ### 2. Update Local Status
 
@@ -64,7 +64,7 @@ Use Jira MCP tools to:
 ### 6. Output
 
 ```
-✅ Closed issue #$ARGUMENTS
+✅ Closed task #$ARGUMENTS
   Local: Task marked complete
   Jira: Issue transitioned to Done
   Epic progress: {new_progress}% ({closed}/{total} tasks complete)
@@ -97,7 +97,7 @@ Always sync local state before Jira.
 ## Example Output
 
 ```
-🎯 Closing issue #123 with resolution: Fixed
+🎯 Closing task PROJ-123 with resolution: Fixed
 🔄 Mode: Jira
 📋 Checking local task file...
    Task: Implement user authentication
@@ -105,5 +105,5 @@ Always sync local state before Jira.
 🔍 Found Jira issue: PROJ-456
 📊 Transitioning Jira issue to Done...
 ✅ Jira issue closed with resolution: Done
-✅ Issue #123 closed successfully
+✅ Issue PROJ-123 closed successfully
 ```

@@ -116,10 +116,6 @@
       }
     },
     "integrations": {
-      "github_actions": {
-        "enabled": false,
-        "workflow_trigger": false
-      },
       "ci_cd": {
         "enabled": false,
         "pipeline_variables": []

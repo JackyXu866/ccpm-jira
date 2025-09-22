@@ -42,7 +42,7 @@
         "transform": "url"
       },
       "github": {
-        "target": "GitHub Issue",
+        "target": "GitHub Task",
         "field_type": "custom",
         "required": false,
         "transform": "url"
@@ -79,7 +79,7 @@
         "target": "prd",
         "transform": "preserve"
       },
-      "GitHub Issue": {
+      "GitHub Task": {
         "target": "github",
         "transform": "preserve"
       },
@@ -117,7 +117,7 @@
         "transform": "datetime"
       },
       "github": {
-        "target": "GitHub Issue",
+        "target": "GitHub Task",
         "field_type": "custom",
         "required": false,
         "transform": "url"
@@ -164,7 +164,7 @@
         "target": "updated",
         "transform": "datetime_from_jira"
       },
-      "GitHub Issue": {
+      "GitHub Task": {
         "target": "github",
         "transform": "preserve"
       },
@@ -233,19 +233,9 @@
         "jira_key": "customfield_10011", 
         "type": "url",
         "description": "Link to Product Requirements Document"
-      },
-      "GitHub Issue": {
-        "jira_key": "customfield_10012",
-        "type": "url",
-        "description": "Link to GitHub issue"
       }
     },
     "task_fields": {
-      "GitHub Issue": {
-        "jira_key": "customfield_10012",
-        "type": "url",
-        "description": "Link to GitHub issue"
-      },
       "Parallel Execution": {
         "jira_key": "customfield_10013",
         "type": "boolean", 

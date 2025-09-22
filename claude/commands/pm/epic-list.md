@@ -17,11 +17,11 @@ Display a list of all epics in the project with their status and progress. Suppo
 ## Mode Detection
 The command automatically detects whether Jira integration is enabled:
 - **Jira Mode**: When `claude/settings.local.json` exists with `jira.enabled: true`
-- **GitHub Mode**: Default mode when Jira is not configured
+- **Local Mode**: Default mode when Jira is not configured
 
 ## Output Format
 
-### GitHub Mode
+### Local Mode
 Shows local epic information:
 ```
 📚 Epics:
@@ -30,19 +30,19 @@ Shows local epic information:
    Status: in-progress
    Progress: 45% (4/9 tasks)
    PRD: .claude/prds/memory-system.md
-   GitHub: #1234
+   Local: PROJ-1234
    Created: 2024-01-15
    
 📁 authentication
    Status: planning
    Progress: 0% (0/5 tasks)  
    PRD: .claude/prds/authentication.md
-   GitHub: Not synced
+   Local: Not synced
    Created: 2024-01-20
 ```
 
 ### Jira Mode
-Shows combined GitHub and Jira information:
+Shows combined local and Jira information:
 ```
 📚 Epics (Jira Integrated):
 
@@ -50,14 +50,14 @@ Shows combined GitHub and Jira information:
    Status: in-progress (Jira: In Progress)
    Progress: 45% (4/9 tasks)
    PRD: .claude/prds/memory-system.md
-   GitHub: #1234 | Jira: PROJ-100
+   Local: PROJ-1234 | Jira: PROJ-100
    Created: 2024-01-15
    
 📁 authentication
    Status: planning (Jira: To Do)
    Progress: 0% (0/5 tasks)
    PRD: .claude/prds/authentication.md
-   GitHub: #1240 | Jira: PROJ-105
+   Local: PROJ-1240 | Jira: PROJ-105
    Created: 2024-01-20
 ```
 
@@ -75,7 +75,7 @@ When Jira mode is enabled:
    - Shows discrepancies if they exist
 
 3. **Epic Linking**: Displays connections
-   - GitHub epic issue number
+   - Local tracking status
    - Jira epic key
    - Direct links to both systems
 
@@ -107,7 +107,7 @@ Output:
 📁 memory-system
    Status: in-progress → review (updated from Jira)
    Progress: 45% → 67% (6/9 tasks)
-   GitHub: #1234 | Jira: PROJ-100
+   Local: PROJ-1234 | Jira: PROJ-100
    Jira Assignee: john.doe@company.com
    Target Release: v2.0.0
    

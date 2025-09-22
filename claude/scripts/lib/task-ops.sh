@@ -14,7 +14,7 @@ set -euo pipefail
 
 # Source dependencies
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "${SCRIPT_DIR}/jira-fields.sh"
+source "${SCRIPT_DIR}/fields.sh"
 source "${SCRIPT_DIR}/../scripts/adapters/jira-adapter.sh"
 
 # Ensure required tools are available

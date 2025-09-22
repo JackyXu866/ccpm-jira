@@ -109,7 +109,7 @@ When `--jql` flag is used or JQL syntax is detected:
 ID        Type    Title                           Status      Updated
 --------  ------  ------------------------------  ----------  ----------
 PROJ-123  Story   Implement user authentication   In Progress 2024-01-15
-#45       Task    Add password reset              Open        2024-01-14
+PROJ-45   Task    Add password reset              Open        2024-01-14
 epic-001  Epic    Authentication System           Planning    2024-01-10
 ```
 
@@ -140,8 +140,8 @@ Perfect for documentation:
 - **PROJ-124**: Setup OAuth2 integration (To Do)
 
 ### Local Tasks (2)
-- **#45**: Add password reset (Open)
-- **#46**: Implement 2FA (Planning)
+- **PROJ-45**: Add password reset (Open)
+- **PROJ-46**: Implement 2FA (Planning)
 ```
 
 ## Saved Searches

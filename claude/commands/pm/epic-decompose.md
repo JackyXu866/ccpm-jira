@@ -18,7 +18,7 @@ Break epic into concrete, actionable tasks. When Jira integration is enabled, op
 ## Mode Detection
 The command automatically detects whether Jira integration is enabled:
 - **Jira Mode**: When `claude/settings.local.json` exists with `jira.enabled: true`
-- **GitHub Mode**: Default mode when Jira is not configured
+- **Local Mode**: Default mode when Jira is not configured
 
 ## Required Rules
 
@@ -97,7 +97,7 @@ name: [Task Title]
 status: open
 created: [Current ISO date/time]
 updated: [Current ISO date/time]
-github: [Will be updated when synced to GitHub]
+jira: [Will be updated when synced to Jira]
 depends_on: []  # List of task numbers this depends on, e.g., [001, 002]
 parallel: true  # Can this run in parallel with other tasks?
 conflicts_with: []  # Tasks that modify same files, e.g., [003, 004]
@@ -119,7 +119,7 @@ Clear, concise description of what needs to be done
 - Code locations/files affected
 
 ## Dependencies
-- [ ] Task/Issue dependencies
+- [ ] Task dependencies
 - [ ] External dependencies
 
 ## Effort Estimate
@@ -145,10 +145,16 @@ Save tasks as: `.claude/epics/$ARGUMENTS/{task_number}.md`
 - **status**: Always start with "open" for new tasks
 - **created**: Get REAL current datetime by running: `date -u +"%Y-%m-%dT%H:%M:%SZ"`
 - **updated**: Use the same real datetime as created for new tasks
-- **github**: Leave placeholder text - will be updated during sync
+- **jira**: Leave placeholder text - will be updated during sync
 - **depends_on**: List task numbers that must complete before this can start (e.g., [001, 002])
 - **parallel**: Set to true if this can run alongside other tasks without conflicts
 - **conflicts_with**: List task numbers that modify the same files (helps coordination)
+- **effort**: Task size (XS, S, M, L, XL)
+- **estimated_hours**: Developer hours without Claude (XS=4, S=8, M=24, L=40, XL=80)
+- **claude_hours**: Estimated with Claude assistance (typically 40-60% of estimated_hours)
+- **assignee**: Email or username for task assignment (optional, defaults to current user)
+- **priority**: High/Medium/Low based on critical path and dependencies
+- **components**: List of affected components (frontend, backend, database, etc.)
 
 ### 5. Task Types to Consider
 - **Setup tasks**: Environment, dependencies, scaffolding
@@ -192,7 +198,7 @@ Spawning 3 agents for parallel task creation:
 When creating tasks with dependencies:
 - Ensure referenced dependencies exist (e.g., if Task 003 depends on Task 002, verify 002 was created)
 - Check for circular dependencies (Task A → Task B → Task A)
-- If dependency issues found, warn but continue: "⚠️ Task dependency warning: {details}"
+- If dependency problems found, warn but continue: "⚠️ Task dependency warning: {details}"
 
 ### 9. Update Epic with Task Summary
 After creating all tasks, update the epic file by adding this section:
@@ -206,6 +212,7 @@ Total tasks: {count}
 Parallel tasks: {parallel_count}
 Sequential tasks: {sequential_count}
 Estimated total effort: {sum of hours}
+Estimated with Claude Code: {sum of claude_hours} (time savings: {percentage}%)
 ```
 
 Also update the epic's frontmatter progress if needed (still 0% until tasks actually start).
@@ -227,7 +234,7 @@ After successfully creating tasks:
    - Total tasks created
    - Parallel vs sequential breakdown
    - Total estimated effort
-3. Suggest next step: "Ready to sync to GitHub? Run: /pm:epic-sync $ARGUMENTS"
+3. Suggest next step: "Ready to sync to Jira? Run: /pm:epic-sync $ARGUMENTS"
 
 ## Error Recovery
 
@@ -237,6 +244,31 @@ If any step fails:
 - Never leave the epic in an inconsistent state
 
 Aim for tasks that can be completed in 1-3 days each. Break down larger tasks into smaller, manageable pieces for the "$ARGUMENTS" epic.
+
+## Claude Code Time Estimation Guide
+
+When estimating time savings with Claude Code assistance:
+
+### Time Reduction Factors by Task Type
+- **Boilerplate/CRUD operations**: 70-80% reduction
+  - Database models, basic APIs, standard UI components
+- **Complex business logic**: 40-50% reduction
+  - Algorithm implementation, data processing, validation rules
+- **Integration work**: 50-60% reduction
+  - API integrations, third-party libraries, service connections
+- **Testing**: 60-70% reduction
+  - Unit tests, integration tests, test data generation
+- **Documentation**: 70-80% reduction
+  - API docs, README files, inline comments
+- **Debugging/Refactoring**: 40-50% reduction
+  - Code analysis, bug fixes, performance optimization
+
+### Example Calculation
+For a task estimated at 24 hours (3 days):
+- If 40% is boilerplate (9.6h → 2.4h with Claude)
+- If 40% is business logic (9.6h → 5.8h with Claude)
+- If 20% is testing (4.8h → 1.4h with Claude)
+- **Total: 24h → 9.6h with Claude (60% reduction)**
 
 ## Jira Integration Details
 
@@ -251,10 +283,20 @@ When Jira mode is enabled and `--with-jira` flag is used:
 Each task creates a Jira issue with:
 - **Issue Type**: Configurable (Story, Task, Sub-task)
 - **Epic Link**: Automatically linked to parent epic
+- **Assignee**: Set to current user or specified team member
 - **Story Points**: Derived from effort estimate (XS=1, S=2, M=3, L=5, XL=8)
-- **Labels**: `github-task`, `epic-{name}`, parallel/sequential indicators
-- **Description**: Full task details including acceptance criteria
-- **Dependencies**: Stored in custom fields or comments
+- **Original Estimate**: Hours based on effort (XS=2h, S=8h, M=24h, L=40h, XL=80h)
+- **Time Tracking**: Calculated for Claude Code assistance (50% reduction typical)
+- **Labels**: `ccpm-task`, `epic-{name}`, parallel/sequential indicators
+- **Sprint**: Current active sprint (if available)
+- **Priority**: Based on dependencies and critical path
+- **Description**: Full task details including:
+  - Acceptance criteria
+  - Technical approach
+  - Dependencies
+  - Estimated Claude Code time savings
+- **Dependencies**: Linked as "blocks/blocked by" relationships
+- **Components**: Mapped from task type (frontend, backend, database, etc.)
 
 ### 3. Enhanced Frontmatter
 When Jira tasks are created, frontmatter includes:
@@ -264,13 +306,25 @@ name: Implement user authentication
 status: open
 created: 2024-01-15T10:30:00Z
 updated: 2024-01-15T10:30:00Z
-github: [Will be updated when synced]
+jira: [Will be updated when synced]
 jira: PROJ-101
 jira_url: https://company.atlassian.net/browse/PROJ-101
+assignee: user@company.com
 depends_on: [001]
 parallel: false
 conflicts_with: []
+effort: M
+estimated_hours: 24
+claude_hours: 10
 story_points: 3
+original_estimate: 24h
+claude_estimate: 10h
+priority: High
+components: [backend, security]
+time_breakdown:
+  boilerplate: 40%
+  logic: 40%
+  testing: 20%
 ---
 ```
 
@@ -299,7 +353,7 @@ Mappings saved to: .claude/epics/memory-system/jira-mapping.json
 
 Next steps:
    - Review tasks: /pm:epic-show memory-system
-   - Sync to GitHub: /pm:epic-sync memory-system
+   - Sync to Jira: /pm:epic-sync memory-system
    - Start work: /pm:task-start 001
 ```
 
@@ -330,7 +384,7 @@ Task creation respects Jira configuration:
 - Immediate visibility in Jira for planning
 - Team members can see work breakdown
 - Sprint planning can begin immediately
-- No need to wait for GitHub sync
+- No need to wait for Jira sync
 
 ### 8. When to Skip Jira Creation
 Don't use `--with-jira` when:

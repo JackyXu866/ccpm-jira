@@ -14,10 +14,10 @@ set -euo pipefail
 
 # Source dependencies
 CONFLICT_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "${CONFLICT_SCRIPT_DIR}/jira-fields.sh"
-source "${CONFLICT_SCRIPT_DIR}/jira-epic-ops.sh"
-source "${CONFLICT_SCRIPT_DIR}/jira-task-ops.sh"
-# Note: jira-validation.sh not sourced to avoid circular dependency
+source "${CONFLICT_SCRIPT_DIR}/fields.sh"
+source "${CONFLICT_SCRIPT_DIR}/epic-ops.sh"
+source "${CONFLICT_SCRIPT_DIR}/task-ops.sh"
+# Note: validation.sh not sourced to avoid circular dependency
 # Validation functions are available when needed
 
 # Ensure required tools are available

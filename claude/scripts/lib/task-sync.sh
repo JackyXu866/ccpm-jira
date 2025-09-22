@@ -8,7 +8,7 @@ set -e
 
 # Load required libraries
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$SCRIPT_DIR/jira-transitions.sh"
+source "$SCRIPT_DIR/transitions.sh"
 source "$SCRIPT_DIR/git-integration.sh"
 
 # Check if sync conflict handler exists and load it
@@ -19,17 +19,17 @@ fi
 # Main Jira task sync function
 # Usage: sync_task_jira <task_number> <task_file> <epic_name> [force_flag]
 sync_task_jira() {
-    local issue_number="$1"
+    local task_number="$1"
     local task_file="$2"
     local epic_name="$3"
     local force_flag="${4:-}"
     
-    if [[ -z "$issue_number" || -z "$task_file" || -z "$epic_name" ]]; then
-        echo "ERROR: issue_number, task_file, and epic_name are required" >&2
+    if [[ -z "$task_number" || -z "$task_file" || -z "$epic_name" ]]; then
+        echo "ERROR: task_number, task_file, and epic_name are required" >&2
         return 1
     fi
     
-    echo "🔄 Starting Jira bidirectional sync for task #$issue_number"
+    echo "🔄 Starting Jira bidirectional sync for task #$task_number"
     
     # Get Jira configuration
     local cloud_id
@@ -42,9 +42,9 @@ sync_task_jira() {
     
     # Get Jira issue key
     local jira_key
-    if ! jira_key=$(get_jira_key_from_github_issue "$issue_number"); then
-        echo "❌ Could not find Jira key for task #$issue_number"
-        echo "   This issue may not be linked to Jira yet"
+    if ! jira_key=$(get_jira_key_from_task "$task_number"); then
+        echo "❌ Could not find Jira key for task #$task_number"
+        echo "   This task may not be linked to Jira yet"
         return 1
     fi
     
@@ -52,26 +52,26 @@ sync_task_jira() {
     
     # Fetch latest data from Jira
     echo "📥 Fetching latest data from Jira..."
-    local jira_data_file="/tmp/jira-issue-$jira_key-$$.json"
-    if ! fetch_jira_issue_data "$cloud_id" "$jira_key" "$jira_data_file"; then
-        echo "❌ Failed to fetch Jira issue data"
+    local jira_data_file="/tmp/jira-task-$jira_key-$$.json"
+    if ! fetch_jira_task_data "$cloud_id" "$jira_key" "$jira_data_file"; then
+        echo "❌ Failed to fetch Jira task data"
         return 1
     fi
     
     # Get local cache data
     echo "📋 Reading local cache..."
     local cache_dir=".claude/epics/$epic_name/jira-cache"
-    local cache_file="$cache_dir/$issue_number.json"
+    local cache_file="$cache_dir/$task_number.json"
     
     if [[ ! -f "$cache_file" ]]; then
         echo "⚠️  No local cache found, creating initial cache"
         mkdir -p "$cache_dir"
-        create_initial_cache "$cache_file" "$issue_number" "$jira_key" "$cloud_id" "$epic_name"
+        create_initial_cache "$cache_file" "$task_number" "$jira_key" "$cloud_id" "$epic_name"
     fi
     
     # Detect changes and conflicts
     echo "🔍 Detecting changes and conflicts..."
-    local conflict_report="/tmp/sync-conflicts-$issue_number-$$.json"
+    local conflict_report="/tmp/sync-conflicts-$task_number-$$.json"
     
     if ! detect_sync_conflicts "$jira_data_file" "$cache_file" "$task_file" "$conflict_report"; then
         echo "❌ Failed to detect conflicts"
@@ -103,7 +103,7 @@ sync_task_jira() {
             echo "   --force: Use local changes (override Jira)"
             echo "   Manual: Edit $task_file to resolve conflicts"
             echo ""
-            echo "Run: issue-sync $issue_number --force"
+            echo "Run: task-sync $task_number --force"
             cleanup_temp_files "$jira_data_file" "$conflict_report"
             return 1
         fi
@@ -131,13 +131,13 @@ sync_task_jira() {
     
     # Update cache with final state
     echo "💾 Updating local cache..."
-    if ! update_sync_cache "$jira_data_file" "$task_file" "$cache_file" "$issue_number" "$jira_key" "$cloud_id" "$epic_name"; then
+    if ! update_sync_cache "$jira_data_file" "$task_file" "$cache_file" "$task_number" "$jira_key" "$cloud_id" "$epic_name"; then
         echo "⚠️  Failed to update cache, but sync completed"
     fi
     
     # Update progress tracking
     echo "📊 Updating progress tracking..."
-    update_sync_progress "$issue_number" "$epic_name" "$jira_key" "$has_conflicts" "$force_flag"
+    update_sync_progress "$task_number" "$epic_name" "$jira_key" "$has_conflicts" "$force_flag"
     
     # Cleanup temporary files
     cleanup_temp_files "$jira_data_file" "$conflict_report"
@@ -146,9 +146,9 @@ sync_task_jira() {
     return 0
 }
 
-# Fetch issue data from Jira
-# Usage: fetch_jira_issue_data <cloud_id> <jira_key> <output_file>
-fetch_jira_issue_data() {
+# Fetch task data from Jira
+# Usage: fetch_jira_task_data <cloud_id> <jira_key> <output_file>
+fetch_jira_task_data() {
     local cloud_id="$1"
     local jira_key="$2"
     local output_file="$3"
@@ -161,7 +161,7 @@ fetch_jira_issue_data() {
     # Create marker file for MCP tool execution
     cat > "/tmp/jira-fetch-request-$jira_key.json" << EOF
 {
-  "action": "fetch_issue",
+  "action": "fetch_task",
   "cloud_id": "$cloud_id",
   "issue_key": "$jira_key",
   "fields": ["status", "assignee", "description", "updated", "resolution"],
@@ -182,29 +182,29 @@ EOF
       "accountId": "user-account-id-placeholder",
       "displayName": "Current User"
     },
-    "description": "Issue description from Jira",
+    "description": "Task description from Jira",
     "updated": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
     "resolution": null
   }
 }
 EOF
     
-    echo "✅ Jira issue data fetched to $output_file"
+    echo "✅ Jira task data fetched to $output_file"
     return 0
 }
 
 # Create initial cache entry
-# Usage: create_initial_cache <cache_file> <issue_number> <jira_key> <cloud_id> <epic_name>
+# Usage: create_initial_cache <cache_file> <task_number> <jira_key> <cloud_id> <epic_name>
 create_initial_cache() {
     local cache_file="$1"
-    local issue_number="$2"
+    local task_number="$2"
     local jira_key="$3"
     local cloud_id="$4"
     local epic_name="$5"
     
     cat > "$cache_file" << EOF
 {
-  "issue_number": "$issue_number",
+  "task_number": "$task_number",
   "jira_key": "$jira_key",
   "cloud_id": "$cloud_id",
   "epic_name": "$epic_name",
@@ -447,16 +447,16 @@ apply_local_changes_to_jira() {
     # Map local status to Jira status
     local jira_status=$(map_local_to_jira_status "$local_status")
     
-    # Transition issue if status changed
+    # Transition task if status changed
     if [[ -n "$jira_status" ]]; then
         echo "   Transitioning to: $jira_status"
         local transition_comment="Status updated via ccpm-jira sync"
         
-        if transition_jira_issue "$cloud_id" "$jira_key" "$jira_status" "$transition_comment"; then
-            echo "✅ Issue transitioned to $jira_status"
+        if transition_jira_task "$cloud_id" "$jira_key" "$jira_status" "$transition_comment"; then
+            echo "✅ Task transitioned to $jira_status"
             log_transition "$jira_key" "Unknown" "$jira_status" "SUCCESS"
         else
-            echo "⚠️  Could not transition issue (may already be in target status)"
+            echo "⚠️  Could not transition task (may already be in target status)"
             log_transition "$jira_key" "Unknown" "$jira_status" "FAILED"
         fi
     fi
@@ -470,12 +470,12 @@ apply_local_changes_to_jira() {
 }
 
 # Update sync cache with final state
-# Usage: update_sync_cache <jira_data_file> <task_file> <cache_file> <issue_number> <jira_key> <cloud_id> <epic_name>
+# Usage: update_sync_cache <jira_data_file> <task_file> <cache_file> <task_number> <jira_key> <cloud_id> <epic_name>
 update_sync_cache() {
     local jira_data_file="$1"
     local task_file="$2"
     local cache_file="$3"
-    local issue_number="$4"
+    local task_number="$4"
     local jira_key="$5"
     local cloud_id="$6"
     local epic_name="$7"
@@ -493,7 +493,7 @@ update_sync_cache() {
     # Update cache
     cat > "$cache_file" << EOF
 {
-  "issue_number": "$issue_number",
+  "task_number": "$task_number",
   "jira_key": "$jira_key",
   "cloud_id": "$cloud_id",
   "epic_name": "$epic_name",
@@ -515,15 +515,15 @@ EOF
 }
 
 # Update progress tracking
-# Usage: update_sync_progress <issue_number> <epic_name> <jira_key> <had_conflicts> <force_flag>
+# Usage: update_sync_progress <task_number> <epic_name> <jira_key> <had_conflicts> <force_flag>
 update_sync_progress() {
-    local issue_number="$1"
+    local task_number="$1"
     local epic_name="$2"
     local jira_key="$3"
     local had_conflicts="$4"
     local force_flag="$5"
     
-    local updates_dir=".claude/epics/$epic_name/updates/$issue_number"
+    local updates_dir=".claude/epics/$epic_name/updates/$task_number"
     mkdir -p "$updates_dir"
     
     # Create sync log entry
@@ -606,12 +606,6 @@ validate_jira_sync_setup() {
         return 1
     fi
     
-    # Check GitHub CLI
-    if command -v gh >/dev/null 2>&1; then
-        echo "✅ GitHub CLI available"
-    else
-        echo "⚠️  GitHub CLI not available (optional)"
-    fi
     
     echo "✅ Jira sync setup validation completed"
     return 0
@@ -619,7 +613,7 @@ validate_jira_sync_setup() {
 
 # Export functions for use by the main script
 export -f sync_task_jira
-export -f fetch_jira_issue_data
+export -f fetch_jira_task_data
 export -f create_initial_cache
 export -f detect_sync_conflicts
 export -f get_conflict_status

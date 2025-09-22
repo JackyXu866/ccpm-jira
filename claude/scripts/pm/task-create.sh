@@ -13,7 +13,7 @@ set -euo pipefail
 
 # Source dependencies
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "${SCRIPT_DIR}/../../lib/jira-task-ops.sh"
+source "${SCRIPT_DIR}/../lib/task-ops.sh"
 
 # Default configuration
 DEFAULT_ISSUE_TYPE="Task"
@@ -109,9 +109,6 @@ interactive_task_creation() {
     echo -n "Assignee email (optional): " >&2
     read -r assignee
     
-    # Get GitHub issue URL
-    echo -n "GitHub issue URL (optional): " >&2
-    read -r github_url
     
     # Build task data JSON
     local task_data
@@ -120,15 +117,13 @@ interactive_task_creation() {
         --arg desc "$description" \
         --arg stat "$status" \
         --arg prio "$priority" \
-        --arg github "$github_url" \
         '{
             name: $name,
             status: $stat,
             created: (now | strftime("%Y-%m-%dT%H:%M:%SZ"))
         } + 
         (if $desc != "" then {description: $desc} else {} end) +
-        (if $prio != "" then {priority: $prio} else {} end) +
-        (if $github != "" then {github: $github} else {} end)')
+        (if $prio != "" then {priority: $prio} else {} end)')
     
     echo >&2
     echo "=== Task Details ===" >&2
@@ -324,7 +319,6 @@ TASK DATA FORMAT:
         "name": "Task name (optional, can be provided as separate parameter)",
         "status": "open|in-progress|blocked|completed",
         "description": "Task description",
-        "github": "https://github.com/user/repo/issues/123",
         "depends_on": [2, 3],
         "parallel": true,
         "conflicts_with": [4, 5],

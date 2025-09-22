@@ -53,12 +53,12 @@ echo ""
 # Delegate to appropriate implementation
 if [ "$jira_mode" = true ]; then
   # Use Jira list implementation
-  if [ -f "claude/lib/epic-list-jira.sh" ]; then
-    source "claude/lib/epic-list-jira.sh"
+  if [ -f "claude/scripts/lib/epic-list.sh" ]; then
+    source "claude/scripts/lib/epic-list.sh"
     list_epics_from_jira "$filter_status" "$filter_assignee"
     exit $?
   else
-    echo "❌ Jira list module not found: claude/lib/epic-list-jira.sh"
+    echo "❌ Jira list module not found: claude/scripts/lib/epic-list.sh"
     echo "Falling back to local listing..."
     jira_mode=false
   fi

@@ -1,10 +1,5 @@
 {
   "version": "2.0.0",
-  "github": {
-    "owner": "",
-    "repo": "",
-    "default_branch": "main"
-  },
   "jira": {
     "enabled": false,
     "cloud_id": "",

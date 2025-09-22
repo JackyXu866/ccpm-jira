@@ -14,15 +14,15 @@ set -euo pipefail
 
 # Test configuration
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-LIB_DIR="${SCRIPT_DIR}/../../lib"
+LIB_DIR="${SCRIPT_DIR}/../../scripts/lib"
 TEST_PROJECT_KEY="TEST"
 TEST_RUN_ID="test_$(date +%s)"
 
 # Source dependencies
-source "${LIB_DIR}/jira-fields.sh"
-source "${LIB_DIR}/jira-epic-ops.sh"
-source "${LIB_DIR}/jira-task-ops.sh"
-source "${LIB_DIR}/jira-validation.sh"
+source "${LIB_DIR}/fields.sh"
+source "${LIB_DIR}/epic-ops.sh"
+source "${LIB_DIR}/task-ops.sh"
+source "${LIB_DIR}/validation.sh"
 source "${LIB_DIR}/conflict-resolution.sh"
 
 # Test tracking variables

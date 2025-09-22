@@ -14,7 +14,7 @@ set -euo pipefail
 
 # Source required libraries
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "${SCRIPT_DIR}/../../lib/jira-epic-ops.sh"
+source "${SCRIPT_DIR}/../lib/epic-ops.sh"
 source "${SCRIPT_DIR}/../lib/settings-manager.sh"
 
 # Default values

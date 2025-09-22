@@ -11,11 +11,11 @@ set -e
 
 # Load git integration library if available
 GIT_INTEGRATION_LIB=""
-if [[ -f "claude/lib/git-integration.sh" ]]; then
-    GIT_INTEGRATION_LIB="claude/lib/git-integration.sh"
-elif [[ -f "../../lib/git-integration.sh" ]]; then
+if [[ -f "claude/scripts/lib/git-integration.sh" ]]; then
+    GIT_INTEGRATION_LIB="claude/scripts/lib/git-integration.sh"
+elif [[ -f "../../scripts/lib/git-integration.sh" ]]; then
     # In case we're in .git/hooks
-    GIT_INTEGRATION_LIB="../../claude/lib/git-integration.sh"
+    GIT_INTEGRATION_LIB="../../claude/scripts/lib/git-integration.sh"
 fi
 
 if [[ -n "$GIT_INTEGRATION_LIB" ]] && [[ -f "$GIT_INTEGRATION_LIB" ]]; then

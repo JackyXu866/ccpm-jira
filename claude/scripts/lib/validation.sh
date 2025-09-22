@@ -14,9 +14,9 @@ set -euo pipefail
 
 # Source dependencies
 VALIDATION_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "${VALIDATION_SCRIPT_DIR}/jira-fields.sh"
-source "${VALIDATION_SCRIPT_DIR}/jira-epic-ops.sh"
-source "${VALIDATION_SCRIPT_DIR}/jira-task-ops.sh"
+source "${VALIDATION_SCRIPT_DIR}/fields.sh"
+source "${VALIDATION_SCRIPT_DIR}/epic-ops.sh"
+source "${VALIDATION_SCRIPT_DIR}/task-ops.sh"
 source "${VALIDATION_SCRIPT_DIR}/../scripts/adapters/jira-adapter.sh"
 
 # Ensure required tools are available

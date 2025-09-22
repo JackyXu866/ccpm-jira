@@ -7,7 +7,7 @@ set -e
 
 # Load required libraries
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$SCRIPT_DIR/jira-transitions.sh"
+source "$SCRIPT_DIR/transitions.sh"
 source "$SCRIPT_DIR/resolution-handler.sh"
 source "$SCRIPT_DIR/pr-templates.sh"
 source "$SCRIPT_DIR/git-integration.sh"
@@ -15,18 +15,18 @@ source "$SCRIPT_DIR/git-integration.sh"
 # Close a Jira task with full workflow
 # Usage: close_task_jira <task_number> <resolution> <task_file> <epic_name> <pr_flag>
 close_task_jira() {
-    local issue_number="$1"
+    local task_number="$1"
     local resolution="$2"
     local task_file="$3"
     local epic_name="$4"
     local pr_flag="$5"
     
-    if [[ -z "$issue_number" || -z "$resolution" || -z "$task_file" || -z "$epic_name" ]]; then
+    if [[ -z "$task_number" || -z "$resolution" || -z "$task_file" || -z "$epic_name" ]]; then
         echo "ERROR: Required parameters missing for Jira task closure" >&2
         return 1
     fi
     
-    echo "🎯 Starting Jira task closure workflow for #$issue_number"
+    echo "🎯 Starting Jira task closure workflow for #$task_number"
     
     # Get Jira configuration
     local cloud_id
@@ -39,7 +39,7 @@ close_task_jira() {
     
     # Get Jira issue key
     local jira_key
-    if ! jira_key=$(get_jira_key_from_github_issue "$issue_number"); then
+    if ! jira_key=$(get_jira_key_from_github_task "$task_number"); then
         echo "⚠️  Could not find Jira key, will handle GitHub-only closure"
         jira_key=""
     else
@@ -71,7 +71,7 @@ close_task_jira() {
         # Transition to "Done" if not already there
         if [[ "$current_status" != "Done" && "$current_status" != "Closed" ]]; then
             echo "🔄 Transitioning Jira issue to Done..."
-            local transition_comment="Closed via ccpm-jira integration (GitHub issue #$issue_number) with resolution: $normalized_resolution"
+            local transition_comment="Closed via ccpm-jira integration (task #$task_number) with resolution: $normalized_resolution"
             
             if transition_jira_issue "$cloud_id" "$jira_key" "Done" "$transition_comment"; then
                 echo "✅ Issue transitioned to Done"
@@ -108,13 +108,11 @@ close_task_jira() {
             echo "⚠️  Could not update time tracking (may not be configured)"
         fi
     else
-        echo "⚠️  No Jira key found, skipping Jira-specific operations"
-    fi
     
     # Handle pull request creation if requested
     if [[ "$pr_flag" == "--create-pr" ]]; then
         echo "📝 Handling pull request creation..."
-        if handle_pr_creation_for_closure "$issue_number" "$normalized_resolution" "$jira_key"; then
+        if handle_pr_creation_for_closure "$task_number" "$normalized_resolution" "$jira_key"; then
             echo "✅ Pull request handling completed"
         else
             echo "⚠️  Pull request creation failed or not applicable"
@@ -123,7 +121,7 @@ close_task_jira() {
     
     # Update local cache
     echo "💾 Updating local cache..."
-    if update_closure_cache "$issue_number" "$task_file" "$epic_name" "$jira_key" "$normalized_resolution"; then
+    if update_closure_cache "$task_number" "$task_file" "$epic_name" "$jira_key" "$normalized_resolution"; then
         echo "✅ Local cache updated"
     else
         echo "⚠️  Could not update local cache"
@@ -139,7 +137,7 @@ close_task_jira() {
     
     # Archive local data if appropriate
     echo "🗂️  Handling local data archival..."
-    if archive_issue_data "$issue_number" "$epic_name" "$task_file"; then
+    if archive_issue_data "$task_number" "$epic_name" "$task_file"; then
         echo "✅ Issue data archived"
     else
         echo "⚠️  Could not archive issue data"
@@ -149,10 +147,8 @@ close_task_jira() {
     echo ""
     echo "✅ Jira issue closure completed!"
     echo ""
-    echo "Issue: #$issue_number"
-    if [[ -n "$jira_key" ]]; then
-        echo "Jira: $jira_key (transitioned to Done)"
-    fi
+    echo "Issue: #$task_number"
+    echo "Jira: $jira_key (transitioned to Done)"
     echo "Resolution: $normalized_resolution"
     echo "Epic: $epic_name"
     echo ""
@@ -280,9 +276,9 @@ EOF
 }
 
 # Handle PR creation for issue closure
-# Usage: handle_pr_creation_for_closure <issue_number> <resolution> <jira_key>
+# Usage: handle_pr_creation_for_closure <task_number> <resolution> <jira_key>
 handle_pr_creation_for_closure() {
-    local issue_number="$1"
+    local task_number="$1"
     local resolution="$2"
     local jira_key="$3"
     
@@ -301,13 +297,10 @@ handle_pr_creation_for_closure() {
     echo "🌱 Creating PR from branch: $current_branch"
     
     # Generate PR data
-    local custom_description="Closes issue #$issue_number with resolution: $resolution"
-    if [[ -n "$jira_key" ]]; then
-        custom_description="Resolves $jira_key and closes GitHub issue #$issue_number with resolution: $resolution"
-    fi
+    local custom_description="Resolves $jira_key and closes task #$task_number with resolution: $resolution"
     
     local pr_data
-    if pr_data=$(generate_pr_data "Close issue #$issue_number" "$custom_description"); then
+    if pr_data=$(generate_pr_data "Close task #$task_number" "$custom_description"); then
         # Extract title and description
         local pr_title pr_description
         pr_title=$(echo "$pr_data" | grep -o '"title":[^,]*' | cut -d'"' -f4)
@@ -337,9 +330,9 @@ handle_pr_creation_for_closure() {
 }
 
 # Update local cache with closure information
-# Usage: update_closure_cache <issue_number> <task_file> <epic_name> <jira_key> <resolution>
+# Usage: update_closure_cache <task_number> <task_file> <epic_name> <jira_key> <resolution>
 update_closure_cache() {
-    local issue_number="$1"
+    local task_number="$1"
     local task_file="$2"
     local epic_name="$3"
     local jira_key="$4"
@@ -350,7 +343,7 @@ update_closure_cache() {
     mkdir -p "$cache_dir"
     
     # Update or create cache entry
-    local cache_file="$cache_dir/$issue_number.json"
+    local cache_file="$cache_dir/$task_number.json"
     local current_time=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
     
     # Load existing cache or create new
@@ -383,7 +376,7 @@ update_closure_cache() {
         # Create new cache entry
         cat > "$cache_file" << EOF
 {
-  "issue_number": "$issue_number",
+  "task_number": "$task_number",
   "jira_key": "$jira_key",
   "cloud_id": "$(get_jira_cloud_id 2>/dev/null || echo "")",
   "task_file": "$task_file",
@@ -459,9 +452,9 @@ update_task_file_with_closure_info() {
 }
 
 # Archive issue data appropriately
-# Usage: archive_issue_data <issue_number> <epic_name> <task_file>
+# Usage: archive_issue_data <task_number> <epic_name> <task_file>
 archive_issue_data() {
-    local issue_number="$1"
+    local task_number="$1"
     local epic_name="$2"
     local task_file="$3"
     
@@ -470,18 +463,18 @@ archive_issue_data() {
     mkdir -p "$archive_dir"
     
     # Archive task updates
-    local updates_dir=".claude/epics/$epic_name/updates/$issue_number"
+    local updates_dir=".claude/epics/$epic_name/updates/$task_number"
     if [[ -d "$updates_dir" ]]; then
-        local archive_updates_dir="$archive_dir/updates-$issue_number"
+        local archive_updates_dir="$archive_dir/updates-$task_number"
         if cp -r "$updates_dir" "$archive_updates_dir" 2>/dev/null; then
             echo "   Issue updates archived to: $archive_updates_dir"
         fi
     fi
     
     # Create archive summary
-    local archive_summary="$archive_dir/$issue_number-summary.md"
+    local archive_summary="$archive_dir/$task_number-summary.md"
     cat > "$archive_summary" << EOF
-# Issue #$issue_number Archive Summary
+# Issue #$task_number Archive Summary
 
 **Epic**: $epic_name  
 **Task File**: $task_file  

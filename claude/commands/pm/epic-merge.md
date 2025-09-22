@@ -122,9 +122,11 @@ If merge succeeds:
 # Push to remote
 git push origin main
 
-# Clean up worktree
-git worktree remove ../epic-$ARGUMENTS
-echo "✅ Worktree removed: ../epic-$ARGUMENTS"
+# Clean up all task worktrees for this epic
+for worktree in $(git worktree list --porcelain | grep "worktree.*-$ARGUMENTS" | cut -d' ' -f2); do
+  git worktree remove "$worktree"
+  echo "✅ Worktree removed: $worktree"
+done
 
 # Delete branch
 git branch -d epic/$ARGUMENTS

@@ -4,7 +4,7 @@ allowed-tools: Bash, Read, Write, LS, Task
 
 # Epic Sync
 
-Push epic and tasks to Jira, creating Epic and Story/Task issues.
+Push epic and tasks to Jira, creating Epic and Story/Task items.
 
 ## Usage
 ```
@@ -51,17 +51,27 @@ Count and read all task files in the epic directory.
 
 For each task file:
 - Check if task has `jira:` field
-- If not, create new Story/Task in Jira:
-  - Set Epic as parent
-  - Use task name as summary
-  - Copy acceptance criteria to description
-  - Set appropriate issue type (Story/Task/Bug)
-- If exists, update existing issue
+- If not, create new Story/Task in Jira with:
+  - **Epic Link**: Set as parent epic
+  - **Summary**: Task name
+  - **Description**: Full task details including acceptance criteria
+  - **Issue Type**: Story/Task based on size
+  - **Assignee**: From task file or current user
+  - **Story Points**: From effort estimate
+  - **Original Estimate**: Hours from effort size
+  - **Remaining Estimate**: Claude-adjusted estimate (50% typical reduction)
+  - **Priority**: Based on dependencies and critical path
+  - **Labels**: ccpm-task, epic name, parallel/sequential
+  - **Sprint**: Current active sprint if available
+  - **Components**: Based on task type (frontend/backend/etc)
+  - **Fix Version**: From epic target version
+  - **Dependencies**: Create "blocks/blocked by" links
+- If exists, update existing task with any changes
 
 ### 4. Update Local Files
 
 For each created/updated item:
-- Add/update `jira:` field with issue key
+- Add/update `jira:` field with task key
 - Add `last_sync:` timestamp
 - Update `updated:` timestamp
 
@@ -70,8 +80,13 @@ Format:
 ---
 [existing fields]
 jira: PROJ-123
+jira_url: https://company.atlassian.net/browse/PROJ-123
+assignee_id: 557058:12345678-1234-1234-1234-123456789012
 last_sync: 2024-01-15T10:30:00Z
 updated: 2024-01-15T10:30:00Z
+story_points: 3
+original_estimate: 24h
+claude_estimate: 12h
 ---
 ```
 
@@ -108,6 +123,49 @@ Next steps:
 
 - Epic becomes Jira Epic type
 - Tasks become Story or Task type based on size
-- Dependencies are added as issue links
+- Dependencies are added as task links
 - Local files remain source of truth for detailed content
 - Jira holds status and workflow state
+
+## MCP Tool Usage for Field Setting
+
+When creating/updating Jira issues, use these MCP Atlassian tool parameters:
+
+### Creating Tasks
+```javascript
+{
+  "summary": "Task name from file",
+  "description": "Full task description with acceptance criteria",
+  "issuetype": "Story" or "Task",
+  "parent": { "key": "EPIC-KEY" },
+  "assignee": { "accountId": "user-account-id" },
+  "priority": { "name": "High/Medium/Low" },
+  "labels": ["ccpm-task", "epic-name", "parallel"],
+  "customfield_10016": storyPoints, // Story points field
+  "timetracking": {
+    "originalEstimate": "24h",
+    "remainingEstimate": "12h" // Claude-adjusted
+  },
+  "components": [{ "name": "Backend" }],
+  "fixVersions": [{ "name": "v1.2.0" }]
+}
+```
+
+### Creating Dependencies
+After creating tasks, create task links:
+```javascript
+{
+  "type": { "name": "Blocks" },
+  "inwardIssue": { "key": "PROJ-101" },
+  "outwardIssue": { "key": "PROJ-102" }
+}
+```
+
+### Time Estimation with Claude Code
+- Original estimate: Developer time without AI assistance
+- Claude estimate: Typically 40-60% of original
+- Factors:
+  - Boilerplate generation: 80% reduction
+  - Complex logic: 40% reduction
+  - Debugging: 50% reduction
+  - Documentation: 70% reduction

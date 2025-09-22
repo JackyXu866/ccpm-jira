@@ -18,8 +18,8 @@ Launch parallel agents to work on epic tasks in a shared branch.
    test -f .claude/epics/$ARGUMENTS/epic.md || echo "❌ Epic not found. Run: /pm:prd-parse $ARGUMENTS"
    ```
 
-2. **Check GitHub sync:**
-   Look for `github:` field in epic frontmatter.
+2. **Check Jira sync:**
+   Look for `jira:` field in epic frontmatter.
    If missing: "❌ Epic not synced. Run: /pm:epic-sync $ARGUMENTS first"
 
 3. **Check for branch:**
@@ -64,7 +64,7 @@ fi
 
 Read all task files in `.claude/epics/$ARGUMENTS/`:
 - Parse frontmatter for `status`, `depends_on`, `parallel` fields
-- Check GitHub issue status if needed
+- Check Jira task status if needed
 - Build dependency graph
 
 Categorize issues:
@@ -79,7 +79,7 @@ For each ready issue without analysis:
 ```bash
 # Check for analysis
 if ! test -f .claude/epics/$ARGUMENTS/{issue}-analysis.md; then
-  echo "Analyzing issue #{issue}..."
+  echo "Analyzing task #{issue}..."
   # Run analysis (inline or via Task tool)
 fi
 ```
@@ -139,13 +139,13 @@ branch: epic/$ARGUMENTS
 # Execution Status
 
 ## Active Agents
-- Agent-1: Issue #1234 Stream A (Database) - Started {time}
-- Agent-2: Issue #1234 Stream B (API) - Started {time}
-- Agent-3: Issue #1235 Stream A (UI) - Started {time}
+- Agent-1: Issue PROJ-1234 Stream A (Database) - Started {time}
+- Agent-2: Issue PROJ-1234 Stream B (API) - Started {time}
+- Agent-3: Issue PROJ-1235 Stream A (UI) - Started {time}
 
 ## Queued Issues
-- Issue #1236 - Waiting for #1234
-- Issue #1237 - Waiting for #1235
+- Issue PROJ-1236 - Waiting for PROJ-1234
+- Issue PROJ-1237 - Waiting for PROJ-1235
 
 ## Completed
 - {None yet}
@@ -188,18 +188,18 @@ Branch: epic/$ARGUMENTS
 
 Launching {total} agents across {issue_count} issues:
 
-Issue #1234: Database Schema
+Issue PROJ-1234: Database Schema
   ├─ Stream A: Schema creation (Agent-1) ✓ Started
   └─ Stream B: Migrations (Agent-2) ✓ Started
 
-Issue #1235: API Endpoints
+Issue PROJ-1235: API Endpoints
   ├─ Stream A: User endpoints (Agent-3) ✓ Started
   ├─ Stream B: Post endpoints (Agent-4) ✓ Started
   └─ Stream C: Tests (Agent-5) ⏸ Waiting for A & B
 
 Blocked Issues (2):
-  - #1236: UI Components (depends on #1234)
-  - #1237: Integration (depends on #1235, #1236)
+  - PROJ-1236: UI Components (depends on PROJ-1234)
+  - PROJ-1237: Integration (depends on PROJ-1235, PROJ-1236)
 
 Monitor with: /pm:epic-status $ARGUMENTS
 ```

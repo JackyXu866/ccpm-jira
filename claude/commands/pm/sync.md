@@ -80,7 +80,7 @@ last_sync: [current_timestamp]
    Created: 2 new issues
    
 ⚠️ Conflicts resolved:
-   Task #3: Used local content, kept Jira status
+   Task PROJ-3: Used local content, kept Jira status
    
 ✅ All items synced successfully
    Total synced: 12 items

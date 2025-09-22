@@ -20,7 +20,6 @@ sync_epic_to_jira() {
   local name=$(grep "^name:" "$epic_file" | head -1 | sed 's/^name: *//')
   local status=$(grep "^status:" "$epic_file" | head -1 | sed 's/^status: *//')
   local progress=$(grep "^progress:" "$epic_file" | head -1 | sed 's/^progress: *//')
-  local github=$(grep "^github:" "$epic_file" | head -1 | sed 's/^github: *//')
   local created=$(grep "^created:" "$epic_file" | head -1 | sed 's/^created: *//')
   local updated=$(grep "^updated:" "$epic_file" | head -1 | sed 's/^updated: *//')
   local jira_url=$(grep "^jira:" "$epic_file" | head -1 | sed 's/^jira: *//')
@@ -47,9 +46,6 @@ sync_epic_to_jira() {
 - **Progress**: $progress
 - **Local Epic**: $epic_name"
   
-  # Add GitHub link if available
-  [ -n "$github" ] && jira_description="$jira_description
-- **GitHub**: $github"
   
   # Add creation/update timestamps
   [ -n "$created" ] && jira_description="$jira_description
@@ -228,7 +224,6 @@ handle_jira_error() {
   echo ""
   echo "🔄 Fallback options:"
   echo "   1. Retry later when network is available"
-  echo "   2. Sync to GitHub instead: /pm:epic-sync $epic_name"
   echo "   3. Work locally and sync later"
   echo ""
   
@@ -247,14 +242,12 @@ map_epic_fields() {
   # name → Summary
   # status → Status (with workflow mapping)
   # progress → Custom field or description
-  # github → Link in description
   # created/updated → System fields
   # description content → Description
   
   local name=$(grep "^name:" "$epic_file" | head -1 | sed 's/^name: *//')
   local status=$(grep "^status:" "$epic_file" | head -1 | sed 's/^status: *//')
   local progress=$(grep "^progress:" "$epic_file" | head -1 | sed 's/^progress: *//')
-  local github=$(grep "^github:" "$epic_file" | head -1 | sed 's/^github: *//')
   
   cat > "$output_file" << EOF
 {
@@ -264,7 +257,6 @@ map_epic_fields() {
     "jira": "$(map_status_to_jira "$status")"
   },
   "progress": "$progress",
-  "github_link": "$github"
 }
 EOF
 }

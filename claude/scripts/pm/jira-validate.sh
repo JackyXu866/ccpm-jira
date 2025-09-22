@@ -14,11 +14,11 @@ set -euo pipefail
 
 # Script configuration
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-LIB_DIR="${SCRIPT_DIR}/../../lib"
+LIB_DIR="${SCRIPT_DIR}/../lib"
 VALIDATE_SCRIPT="jira-validate"
 
 # Source dependencies
-source "${LIB_DIR}/jira-validation.sh"
+source "${LIB_DIR}/validation.sh"
 source "${LIB_DIR}/conflict-resolution.sh"
 
 # =============================================================================

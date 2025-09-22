@@ -13,7 +13,7 @@ set -euo pipefail
 
 # Source core field mapping library
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "${SCRIPT_DIR}/jira-fields.sh"
+source "${SCRIPT_DIR}/fields.sh"
 
 # =============================================================================
 # Epic Custom Field Handlers
@@ -83,33 +83,6 @@ handle_epic_prd_field() {
     esac
 }
 
-#' Handle GitHub issue link field
-#' Usage: handle_github_field GITHUB_VALUE DIRECTION
-#' Returns: Transformed GitHub value
-handle_github_field() {
-    local github_value="$1"
-    local direction="$2"
-    
-    case "$direction" in
-        "to_jira"|"from_jira")
-            # GitHub URLs should be preserved, but validated
-            if [[ -n "$github_value" ]]; then
-                if [[ "$github_value" =~ ^https://github\.com/.+/issues/[0-9]+$ ]]; then
-                    echo "$github_value"
-                else
-                    echo "Warning: Invalid GitHub issue URL: $github_value" >&2
-                    echo "$github_value"
-                fi
-            else
-                echo ""
-            fi
-            ;;
-        *)
-            echo "Error: Invalid direction: $direction" >&2
-            return 1
-            ;;
-    esac
-}
 
 # =============================================================================
 # Task Custom Field Handlers  
@@ -439,14 +412,6 @@ apply_custom_field_transformations() {
             ;;
     esac
     
-    # Handle common fields (GitHub, dates)
-    local github_value
-    github_value=$(echo "$result" | jq -r '.github // empty')
-    if [[ -n "$github_value" && "$github_value" != "null" ]]; then
-        local transformed_github
-        transformed_github=$(handle_github_field "$github_value" "$direction")
-        result=$(echo "$result" | jq --arg gh "$transformed_github" '.github = $gh')
-    fi
     
     echo "$result"
 }
@@ -505,7 +470,6 @@ validate_custom_fields() {
 # Export custom field handler functions
 export -f handle_epic_progress_field
 export -f handle_epic_prd_field
-export -f handle_github_field
 export -f handle_task_dependencies_field
 export -f handle_task_parallel_field
 export -f handle_task_conflicts_field

@@ -240,6 +240,7 @@ Specialized agents implement tasks while maintaining progress updates and an aud
 > **📋 Full reference:** [docs/commands-reference.md](docs/commands-reference.md)  
 > **🚀 Getting started with Jira:** [docs/getting-started-jira.md](docs/getting-started-jira.md)  
 > **🎫 Jira examples:** [docs/jira-examples.md](docs/jira-examples.md)  
+> **🗺️ Jira field mapping:** [docs/jira-field-mapping.md](docs/jira-field-mapping.md)  
 > **📖 Workflows & best practices:** [docs/workflows.md](docs/workflows.md)  
 > **❓ FAQ:** [docs/faq.md](docs/faq.md)
 

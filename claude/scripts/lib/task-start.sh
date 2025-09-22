@@ -8,22 +8,22 @@ set -e
 
 # Load required libraries
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$SCRIPT_DIR/jira-transitions.sh"
+source "$SCRIPT_DIR/transitions.sh"
 source "$SCRIPT_DIR/git-integration.sh"
 
 # Start work on a Jira task
 # Usage: start_task_jira <task_number> <task_file> <epic_name>
 start_task_jira() {
-    local issue_number="$1"
+    local task_number="$1"
     local task_file="$2"
     local epic_name="$3"
     
-    if [[ -z "$issue_number" || -z "$task_file" || -z "$epic_name" ]]; then
-        echo "ERROR: issue_number, task_file, and epic_name are required" >&2
+    if [[ -z "$task_number" || -z "$task_file" || -z "$epic_name" ]]; then
+        echo "ERROR: task_number, task_file, and epic_name are required" >&2
         return 1
     fi
     
-    echo "🚀 Starting Jira task workflow for #$issue_number"
+    echo "🚀 Starting Jira task workflow for #$task_number"
     
     # Get Jira configuration
     local cloud_id
@@ -36,9 +36,9 @@ start_task_jira() {
     
     # Get Jira issue key
     local jira_key
-    if ! jira_key=$(get_jira_key_from_github_issue "$issue_number"); then
-        echo "⚠️  Could not find Jira key, will use GitHub issue for branch naming"
-        jira_key=""
+    if ! jira_key=$(get_jira_key_from_task "$task_number"); then
+        echo "⚠️  Could not find Jira key for task $task_number"
+        return 1
     else
         echo "   Jira key: $jira_key"
     fi
@@ -53,34 +53,30 @@ start_task_jira() {
         echo "   User ID: $current_user_id"
     fi
     
-    # Transition issue to "In Progress" if Jira key exists
-    if [[ -n "$jira_key" ]]; then
-        echo "🔄 Transitioning Jira issue to In Progress..."
-        local transition_comment="Started work via ccpm-jira integration (task $issue_number)"
+    # Transition issue to "In Progress"
+    echo "🔄 Transitioning Jira issue to In Progress..."
+    local transition_comment="Started work via ccpm-jira integration (task $task_number)"
+    
+    if transition_jira_issue "$cloud_id" "$jira_key" "In Progress" "$transition_comment"; then
+        echo "✅ Issue transitioned to In Progress"
         
-        if transition_jira_issue "$cloud_id" "$jira_key" "In Progress" "$transition_comment"; then
-            echo "✅ Issue transitioned to In Progress"
-            
-            # Log the transition
-            log_transition "$jira_key" "Unknown" "In Progress" "SUCCESS"
-        else
-            echo "⚠️  Could not transition issue to In Progress (may already be in progress or custom workflow)"
-            
-            # Log the failed transition
-            log_transition "$jira_key" "Unknown" "In Progress" "FAILED"
-        fi
-        
-        # Assign issue to current user
-        if [[ -n "$current_user_id" ]]; then
-            echo "👥 Assigning issue to current user..."
-            if assign_jira_issue "$cloud_id" "$jira_key" "$current_user_id"; then
-                echo "✅ Issue assigned to current user"
-            else
-                echo "⚠️  Could not assign issue (may not have permissions)"
-            fi
-        fi
+        # Log the transition
+        log_transition "$jira_key" "Unknown" "In Progress" "SUCCESS"
     else
-        echo "⚠️  No Jira key found, skipping Jira transition"
+        echo "⚠️  Could not transition issue to In Progress (may already be in progress or custom workflow)"
+        
+        # Log the failed transition
+        log_transition "$jira_key" "Unknown" "In Progress" "FAILED"
+    fi
+    
+    # Assign issue to current user
+    if [[ -n "$current_user_id" ]]; then
+        echo "👥 Assigning issue to current user..."
+        if assign_jira_issue "$cloud_id" "$jira_key" "$current_user_id"; then
+            echo "✅ Issue assigned to current user"
+        else
+            echo "⚠️  Could not assign issue (may not have permissions)"
+        fi
     fi
     
     # Create feature branch with Jira key if available
@@ -96,37 +92,30 @@ start_task_jira() {
     if [[ -n "$task_title" ]]; then
         branch_description=$(echo "$task_title" | head -c 30 | sed 's/[^a-zA-Z0-9 ]//g' | xargs)
     else
-        branch_description="task-$issue_number"
+        branch_description="task-$task_number"
     fi
     
     local branch_name=""
-    if [[ -n "$jira_key" ]]; then
-        # Use Jira key for branch naming
-        if branch_name=$(generate_branch_name "$jira_key" "$branch_description"); then
-            # Check for conflicts and resolve
-            branch_name=$(resolve_branch_conflict "$branch_name")
-            
-            # Create the branch
-            if create_jira_formatted_branch "$branch_name"; then
-                echo "✅ Created Jira-formatted branch: $branch_name"
-            else
-                echo "⚠️  Branch creation failed, continuing without new branch"
-                branch_name=""
-            fi
-        fi
-    else
-        # Fallback to GitHub issue-based branch
-        if branch_name=$(create_jira_branch "$issue_number" "$branch_description"); then
-            echo "✅ Created branch: $branch_name"
+    # Use Jira key for branch naming
+    if branch_name=$(generate_branch_name "$jira_key" "$branch_description"); then
+        # Check for conflicts and resolve
+        branch_name=$(resolve_branch_conflict "$branch_name")
+        
+        # Create the branch
+        if create_jira_formatted_branch "$branch_name"; then
+            echo "✅ Created Jira-formatted branch: $branch_name"
         else
             echo "⚠️  Branch creation failed, continuing without new branch"
             branch_name=""
         fi
+    else
+        echo "⚠️  Branch creation failed, continuing without new branch"
+        branch_name=""
     fi
     
     # Update local cache with Jira data
     echo "💾 Updating local cache..."
-    if update_local_cache "$issue_number" "$task_file" "$epic_name" "$jira_key" "$cloud_id"; then
+    if update_local_cache "$task_number" "$task_file" "$epic_name" "$jira_key" "$cloud_id"; then
         echo "✅ Local cache updated"
     else
         echo "⚠️  Could not update local cache"
@@ -144,10 +133,8 @@ start_task_jira() {
     echo ""
     echo "✅ Jira issue start completed!"
     echo ""
-    echo "Issue: #$issue_number"
-    if [[ -n "$jira_key" ]]; then
-        echo "Jira: $jira_key"
-    fi
+    echo "Issue: #$task_number"
+    echo "Jira: $jira_key"
     if [[ -n "$branch_name" ]]; then
         echo "Branch: $branch_name"
     fi
@@ -249,15 +236,15 @@ create_jira_formatted_branch() {
 }
 
 # Update local cache with Jira data
-# Usage: update_local_cache <issue_number> <task_file> <epic_name> <jira_key> <cloud_id>
+# Usage: update_local_cache <task_number> <task_file> <epic_name> <jira_key> <cloud_id>
 update_local_cache() {
-    local issue_number="$1"
+    local task_number="$1"
     local task_file="$2"
     local epic_name="$3"
     local jira_key="$4"
     local cloud_id="$5"
     
-    if [[ -z "$issue_number" || -z "$task_file" || -z "$epic_name" ]]; then
+    if [[ -z "$task_number" || -z "$task_file" || -z "$epic_name" ]]; then
         echo "ERROR: Required parameters missing for cache update" >&2
         return 1
     fi
@@ -267,10 +254,10 @@ update_local_cache() {
     mkdir -p "$cache_dir"
     
     # Create cache entry
-    local cache_file="$cache_dir/$issue_number.json"
+    local cache_file="$cache_dir/$task_number.json"
     cat > "$cache_file" << EOF
 {
-  "issue_number": "$issue_number",
+  "task_number": "$task_number",
   "jira_key": "$jira_key",
   "cloud_id": "$cloud_id",
   "task_file": "$task_file",
@@ -363,7 +350,7 @@ handle_jira_custom_workflow() {
     
     echo "🔍 Handling custom workflow for $jira_key..."
     
-    # Use the custom workflow handler from jira-transitions.sh
+    # Use the custom workflow handler from transitions.sh
     if handle_custom_workflow "$cloud_id" "$jira_key" "$target_status"; then
         echo "✅ Custom workflow handled successfully"
         return 0
@@ -402,12 +389,6 @@ validate_jira_setup() {
         return 1
     fi
     
-    # Check GitHub CLI
-    if command -v gh >/dev/null 2>&1; then
-        echo "✅ GitHub CLI available"
-    else
-        echo "⚠️  GitHub CLI not available (optional)"
-    fi
     
     echo "✅ Jira integration setup validation completed"
     return 0
